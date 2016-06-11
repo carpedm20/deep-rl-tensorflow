@@ -1,0 +1,2 @@
+class Agent(object):
+  pass
