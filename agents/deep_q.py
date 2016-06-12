@@ -22,8 +22,16 @@ class DeepQ(Agent):
     self.t_train_freq = conf.t_train_freq
     self.t_target_q_update_freq = conf.t_target_q_update_freq
 
-    self.min_reward = conf.min_reward
-    self.max_reward = conf.max_reward
+    self.discount_r = conf.discount_r
+    self.min_r = conf.min_r
+    self.max_r = conf.max_r
+    self.min_delta = conf.min_delta
+    self.max_delta = conf.max_delta
+
+    self.learning_rate = conf.learning_rate
+    self.learning_rate_minimum = conf.learning_rate_minimum
+    self.learning_rate_decay = conf.learning_rate_decay
+    self.learning_rate_decay_step = conf.learning_rate_decay_step
 
     self.pred_network = pred_network
     self.target_network = target_network
@@ -39,6 +47,30 @@ class DeepQ(Agent):
       self.new_game = self.env.new_random_game
     else:
       self.new_game = self.env.new_game
+
+    # Optimizer
+    with tf.variable_scope('optimizer'):
+      self.targets = tf.placeholder('float32', [None], name='target_q_t')
+      self.actions = tf.placeholder('int64', [None], name='action')
+
+      actions_one_hot = tf.one_hot(self.actions, self.env.action_size, 1.0, 0.0, name='action_one_hot')
+      pred_q = tf.reduce_sum(self.pred_network.outputs * actions_one_hot, reduction_indices=1, name='q_acted')
+
+      self.delta = self.targets - pred_q
+      self.clipped_delta = tf.clip_by_value(self.delta, self.min_delta, self.max_delta, name='clipped_delta')
+
+      self.loss = tf.reduce_mean(tf.square(self.clipped_delta), name='loss')
+
+      self.learning_rate_op = tf.maximum(self.learning_rate_minimum,
+          tf.train.exponential_decay(
+              self.learning_rate,
+              self.t,
+              self.learning_rate_decay_step,
+              self.learning_rate_decay,
+              staircase=True))
+
+      self.optim = tf.train.RMSPropOptimizer(
+        self.learning_rate_op, momentum=0.95, epsilon=0.01).minimize(self.loss)
 
   def train(self, saver, model_dir, t_max):
     tf.initialize_all_variables().run()
@@ -78,7 +110,7 @@ class DeepQ(Agent):
     return action
 
   def observe(self, observation, reward, action, terminal):
-    reward = max(self.min_reward, min(self.max_reward, reward))
+    reward = max(self.min_r, min(self.max_r, reward))
 
     self.history.add(observation)
     self.experience.add(observation, reward, action, terminal)
@@ -104,7 +136,7 @@ class DeepQ(Agent):
 
     terminal = np.array(terminal) + 0.
     max_q_t_plus_1 = np.max(q_t_plus_1, axis=1)
-    target_q_t = (1. - terminal) * self.discount * max_q_t_plus_1 + reward
+    target_q_t = (1. - terminal) * self.discount_r * max_q_t_plus_1 + reward
 
     _, q_t, loss, summary_str = self.sess.run([self.optim, self.q, self.loss, self.q_summary], {
       self.target_q_t: target_q_t,

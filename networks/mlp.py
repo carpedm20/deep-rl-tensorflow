@@ -22,7 +22,7 @@ class MLPSmall(Network):
     with tf.variable_scope(name):
       layer = self.inputs = tf.placeholder('float32', [batch_size, history_length] + observation_dims, 'inputs')
 
-      if len(layer.get_shape().as_list()) == 2:
+      if len(layer.get_shape().as_list()) == 3:
         assert layer.get_shape().as_list()[1] == 1
         layer = tf.reshape(layer, [-1] + layer.get_shape().as_list()[2:])
 
