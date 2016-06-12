@@ -10,8 +10,8 @@ MAPS = {
   "4x4": [
     "HHHD",
     "FFFF",
+    "FHHH",
     "SHHH",
-    "AHHH",
   ],
   "9x9": [
     "HHHHHHHHD",
@@ -21,8 +21,8 @@ MAPS = {
     "FFFFFFFFF",
     "FHHHHHHHH",
     "FHHHHHHHH",
+    "FHHHHHHHH",
     "SHHHHHHHH",
-    "AHHHHHHHH",
   ],
 }
 
@@ -68,13 +68,13 @@ class CorridorEnv(discrete.DiscreteEnv):
     def to_s(row, col):
       return row*ncol + col
     def inc(row, col, a):
-      if a==0:
+      if a == 0: # left
         col = max(col-1,0)
-      elif a==1:
+      elif a == 1: # down
         row = min(row+1, nrow-1)
-      elif a==2:
+      elif a == 2: # right
         col = min(col+1, ncol-1)
-      elif a==3:
+      elif a == 3: # up
         row = max(row-1, 0)
 
       return (row, col)
@@ -88,7 +88,11 @@ class CorridorEnv(discrete.DiscreteEnv):
           newstate = to_s(newrow, newcol)
           letter = desc[newrow, newcol]
           done = letter in 'DAH'
-          rew = 1.0 if letter == 'A' else 10.0 if letter == 'D' else 0.0
+          rew = 1.0 if letter == 'A' \
+              else 10.0 if letter == 'D' \
+              else -1.0 if letter == 'H' \
+              else 1.0 if (newrow != row or newcol != col) and letter == 'F' \
+              else 0.0
           li.append((1.0/3.0, newstate, rew, done))
 
     super(CorridorEnv, self).__init__(nrow * ncol, n_actions, P, isd)
@@ -115,7 +119,27 @@ class CorridorEnv(discrete.DiscreteEnv):
     return [["Left", "Down", "Right", "Up"][i] if i < 4 else "NoOp" for i in xrange(self.action_space.n)]
 
 register(
-  id='Corridor-v5',
+  id='CorridorSmall-v5',
+  entry_point='environments.corridor:CorridorEnv',
+  kwargs={
+    'map_name': '4x4',
+    'n_actions': 5
+  },
+  timestep_limit=100,
+)
+
+register(
+  id='CorridorSmall-v10',
+  entry_point='environments.corridor:CorridorEnv',
+  kwargs={
+    'map_name': '4x4',
+    'n_actions': 10
+  },
+  timestep_limit=100,
+)
+
+register(
+  id='CorridorBig-v5',
   entry_point='environments.corridor:CorridorEnv',
   kwargs={
     'map_name': '9x9',
@@ -125,7 +149,7 @@ register(
 )
 
 register(
-  id='Corridor-v10',
+  id='CorridorBig-v10',
   entry_point='environments.corridor:CorridorEnv',
   kwargs={
     'map_name': '9x9',

@@ -4,10 +4,13 @@ import random
 import numpy as np
 from tqdm import tqdm
 import tensorflow as tf
+from logging import getLogger
 
 from .agent import Agent
 from .history import History
 from .experience import Experience
+
+logger = getLogger(__name__)
 
 class DeepQ(Agent):
   def __init__(self, sess, pred_network, target_network, env, stat, conf):
@@ -25,8 +28,8 @@ class DeepQ(Agent):
     self.discount_r = conf.discount_r
     self.min_r = conf.min_r
     self.max_r = conf.max_r
-    self.min_delta = conf.min_delta
-    self.max_delta = conf.max_delta
+    self.max_grad_norm = conf.max_grad_norm
+    self.observation_dims = conf.observation_dims
 
     self.learning_rate = conf.learning_rate
     self.learning_rate_minimum = conf.learning_rate_minimum
@@ -57,25 +60,29 @@ class DeepQ(Agent):
       pred_q = tf.reduce_sum(self.pred_network.outputs * actions_one_hot, reduction_indices=1, name='q_acted')
 
       self.delta = self.targets - pred_q
-      self.clipped_delta = tf.clip_by_value(self.delta, self.min_delta, self.max_delta, name='clipped_delta')
-
-      self.loss = tf.reduce_mean(tf.square(self.clipped_delta), name='loss')
+      self.loss = tf.reduce_mean(tf.square(self.delta), name='loss')
 
       self.learning_rate_op = tf.maximum(self.learning_rate_minimum,
           tf.train.exponential_decay(
               self.learning_rate,
-              self.t,
+              self.stat.t_op,
               self.learning_rate_decay_step,
               self.learning_rate_decay,
               staircase=True))
 
-      self.optim = tf.train.RMSPropOptimizer(
-        self.learning_rate_op, momentum=0.95, epsilon=0.01).minimize(self.loss)
+      optimizer = tf.train.RMSPropOptimizer(
+        self.learning_rate_op, momentum=0.95, epsilon=0.01)
+      
+      grads_and_vars = optimizer.compute_gradients(self.loss)
+      for idx, (grad, var) in enumerate(grads_and_vars):
+        if grad is not None:
+          grads_and_vars[idx] = (tf.clip_by_norm(grad, self.max_grad_norm), var)
+      self.optim = optimizer.apply_gradients(grads_and_vars)
 
-  def train(self, saver, model_dir, t_max):
+  def train(self, t_max):
     tf.initialize_all_variables().run()
-    self.pred_network.load_model(saver, model_dir)
 
+    self.stat.load_model()
     self.target_network.run_copy()
 
     start_t = self.stat.get_t()
@@ -94,10 +101,14 @@ class DeepQ(Agent):
       # 2. act
       observation, reward, terminal, info = self.env.step(action, is_training=True)
       # 3. observe
-      q, loss = self.observe(observation, reward, action, terminal)
+      q, loss, is_update = self.observe(observation, reward, action, terminal)
 
-      #if self.t >= self.t_learn_start and self.stat:
-      #  self.stat.on_step(action, reward, terminal, ep, q, loss)
+      logger.debug("a: %d, r: %d, t: %d, q: %.4f, l: %.2f" % \
+          (action, reward, terminal, np.mean(q), loss))
+
+      if self.stat:
+        self.stat.on_step(self.t, action, reward, terminal,
+                          ep, q, loss, is_update, self.learning_rate_op)
 
       if terminal:
         observation, reward, terminal = self.new_game()
@@ -106,7 +117,7 @@ class DeepQ(Agent):
     if random.random() < ep:
       action = random.randrange(self.env.action_size)
     else:
-      action = self.pred_network.predict([s_t])[0]
+      action = self.pred_network.calc_actions([s_t])[0]
     return action
 
   def observe(self, observation, reward, action, terminal):
@@ -115,38 +126,65 @@ class DeepQ(Agent):
     self.history.add(observation)
     self.experience.add(observation, reward, action, terminal)
 
-    result = 0, 0
+    # q, loss, is_update
+    result = [], 0, False
+
     if self.t > self.t_learn_start:
       if self.t % self.t_train_freq == 0:
-        result = self.q_learning_mini_batch()
+        result = self.q_learning_minibatch()
 
       if self.t % self.t_target_q_update_freq == self.t_target_q_update_freq - 1:
         self.update_target_q_network()
 
     return result
 
-  def q_learning_mini_batch(self):
+  def q_learning_minibatch(self):
     if self.experience.count < self.history_length:
-      return 0, 0
+      return [], 0, False
     else:
       s_t, action, reward, s_t_plus_1, terminal = self.experience.sample()
 
-    t = time.time()
-    q_t_plus_1 = self.target_network.predict(s_t_plus_1)
-
     terminal = np.array(terminal) + 0.
-    max_q_t_plus_1 = np.max(q_t_plus_1, axis=1)
+    max_q_t_plus_1 = self.target_network.calc_max_outputs(s_t_plus_1)
     target_q_t = (1. - terminal) * self.discount_r * max_q_t_plus_1 + reward
 
-    _, q_t, loss, summary_str = self.sess.run([self.optim, self.q, self.loss, self.q_summary], {
-      self.target_q_t: target_q_t,
-      self.action: action,
-      self.s_t: s_t,
-      self.learning_rate_step: self.t,
+    self.q_learning_minibatch_test()
+    _, q_t, loss = self.sess.run([self.optim, self.pred_network.outputs, self.loss], {
+      self.targets: target_q_t,
+      self.actions: action,
+      self.pred_network.inputs: s_t,
     })
 
-    return q_t, loss
+    return q_t, loss, True
+
+  def q_learning_minibatch_test(self):
+    s_t = np.array([[[ 0., 0., 0., 0.],
+                     [ 0., 0., 0., 0.],
+                     [ 0., 0., 0., 0.],
+                     [ 1., 0., 0., 0.]]], dtype=np.uint8)
+    s_t_plus_1 = np.array([[[ 0., 0., 0., 0.],
+                            [ 0., 0., 0., 0.],
+                            [ 1., 0., 0., 0.],
+                            [ 0., 0., 0., 0.]]], dtype=np.uint8)
+    s_t = s_t.reshape([1, 1] + self.observation_dims)
+    s_t_plus_1 = s_t_plus_1.reshape([1, 1] + self.observation_dims)
+
+    action = [3]
+    reward = [1]
+    terminal = [0]
+
+    terminal = np.array(terminal) + 0.
+    max_q_t_plus_1 = self.target_network.calc_max_outputs(s_t_plus_1)
+    target_q_t = (1. - terminal) * self.discount_r * max_q_t_plus_1 + reward
+
+    _, q_t, a, loss = self.sess.run([
+        self.optim, self.pred_network.outputs, self.pred_network.actions, self.loss
+      ], {
+        self.targets: target_q_t,
+        self.actions: action,
+        self.pred_network.inputs: s_t,
+      })
+    logger.debug("q: %s, a: %d, l: %.2f" % (q_t, a, loss))
 
   def update_target_q_network(self):
-    for name in self.w.keys():
-      self.t_w_assign_op[name].eval({self.t_w_input[name]: self.w[name].eval()})
+    self.target_network.run_copy()

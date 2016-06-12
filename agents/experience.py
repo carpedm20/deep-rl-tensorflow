@@ -10,20 +10,10 @@ class Experience(object):
     self.history_length = history_length
     self.memory_size = memory_size
 
-    if self.data_format == 'NHWC':
-      self.history = np.zeros(
-          observation_dims + [history_length], dtype=np.uint8)
-    elif self.data_format == 'NCHW':
-      self.history = np.zeros(
-          [self.history_length] + observation_dims, dtype=np.uint8)
-    else:
-      raise ValueError("unknown data_format : %s" % self.data_format)
-
     self.actions = np.empty(self.memory_size, dtype=np.uint8)
-    self.rewards = np.empty(self.memory_size, dtype=np.uint8)
-    self.observations = np.empty([self.memory_size] + observation_dims, dtype=np.float16)
+    self.rewards = np.empty(self.memory_size, dtype=np.int8)
+    self.observations = np.empty([self.memory_size] + observation_dims, dtype=np.uint8)
     self.terminals = np.empty(self.memory_size, dtype=np.bool)
-
 
     # pre-allocate prestates and poststates for minibatch
     self.prestates = np.empty([self.batch_size, self.history_length] + observation_dims, dtype = np.float16)

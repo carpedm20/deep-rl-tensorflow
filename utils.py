@@ -23,7 +23,7 @@ def get_model_dir(config, exceptions=None):
     if key not in exceptions:
       names.append("%s=%s" % (key, ",".join([str(i) for i in attrs[key]])
           if type(attrs[key]) == list else attrs[key]))
-  return os.path.join(*names) + '/'
+  return os.path.join('checkpoints', *names) + '/'
 
 def timeit(f):
   def timed(*args, **kwargs):

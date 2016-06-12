@@ -39,6 +39,7 @@ class Environment(object):
 
   def step(self, action, is_training=False):
     observation, reward, terminal, info = self.env.step(action)
+    if self.display: self.env.render()
     return self.preprocess(observation), reward, terminal, info
 
   def preprocess(self):
