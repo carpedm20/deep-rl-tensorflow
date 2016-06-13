@@ -5,14 +5,12 @@ import tensorflow as tf
 from logging import getLogger
 
 from .agent import Agent
-from .history import History
-from .experience import Experience
 
 logger = getLogger(__name__)
 
 class DeepQ(Agent):
   def __init__(self, sess, pred_network, env, stat, conf, target_network=None):
-    super(DeepQ, self).__init__(sess, pred_network, target_network, env, stat, conf)
+    super(DeepQ, self).__init__(sess, pred_network, env, stat, conf, target_network=target_network)
 
     # Optimizer
     with tf.variable_scope('optimizer'):
@@ -71,9 +69,16 @@ class DeepQ(Agent):
 
     terminal = np.array(terminal) + 0.
 
-    # Deep Q-learning
-    max_q_t_plus_1 = self.target_network.calc_max_outputs(s_t_plus_1)
-    target_q_t = (1. - terminal) * self.discount_r * max_q_t_plus_1 + reward
+    if self.double_q:
+      # Double Q-learning
+      pred_action = self.pred_network.calc_actions(s_t_plus_1)
+      q_t_plus_1_with_pred_action = self.target_network.calc_outputs_with_idx(
+          s_t_plus_1, [[idx, pred_a] for idx, pred_a in enumerate(pred_action)])
+      target_q_t = (1. - terminal) * self.discount_r * q_t_plus_1_with_pred_action + reward
+    else:
+      # Deep Q-learning
+      max_q_t_plus_1 = self.target_network.calc_max_outputs(s_t_plus_1)
+      target_q_t = (1. - terminal) * self.discount_r * max_q_t_plus_1 + reward
 
     _, q_t, loss = self.sess.run([self.optim, self.pred_network.outputs, self.loss], {
       self.targets: target_q_t,

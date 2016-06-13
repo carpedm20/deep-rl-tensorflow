@@ -13,7 +13,8 @@ flags = tf.app.flags
 
 # Deep q Network
 flags.DEFINE_boolean('use_gpu', True, 'Whether to use gpu or not. gpu use NHWC and gpu use NCHW for data_format')
-flags.DEFINE_string('agent_type', 'DQN', 'The type of agent [DQN, DDQN]')
+flags.DEFINE_string('agent_type', 'DQN', 'The type of agent [DQN]')
+flags.DEFINE_boolean('double_q', True, 'Whether to use double Q-learning')
 flags.DEFINE_string('network_header_type', 'nips', 'The type of network header [mlp, nature, nips]')
 flags.DEFINE_string('network_output_type', 'normal', 'The type of network output [normal, dueling]')
 
@@ -70,9 +71,6 @@ conf = flags.FLAGS
 if conf.agent_type == 'DQN':
   from agents.deep_q import DeepQ
   TrainAgent = DeepQ
-elif conf.agent_type == 'DDQN':
-  from agents.double_q import DoubleQ
-  TrainAgent = DoubleQ 
 else:
   raise ValueError('Unknown agent_type: %s' % conf.agent_type)
 

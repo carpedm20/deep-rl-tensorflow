@@ -5,6 +5,9 @@ from tqdm import tqdm
 import tensorflow as tf
 from logging import getLogger
 
+from .history import History
+from .experience import Experience
+
 logger = getLogger(__name__)
 
 def get_time():
@@ -36,15 +39,17 @@ class Agent(object):
     self.learning_rate_decay = conf.learning_rate_decay
     self.learning_rate_decay_step = conf.learning_rate_decay_step
 
+    # network
+    self.double_q = conf.double_q
     self.pred_network = pred_network
     self.target_network = target_network
     self.target_network.create_copy_op(self.pred_network)
 
     self.env = env 
-    self.experience = Experience(conf.data_format,
-        conf.batch_size, conf.history_length, conf.memory_size, conf.observation_dims)
     self.history = History(conf.data_format,
         conf.batch_size, conf.history_length, conf.observation_dims)
+    self.experience = Experience(conf.data_format,
+        conf.batch_size, conf.history_length, conf.memory_size, conf.observation_dims)
 
     if conf.random_start:
       self.new_game = self.env.new_random_game
