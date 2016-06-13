@@ -9,26 +9,23 @@ from networks.mlp import MLPSmall
 from agents.statistic import Statistic
 from environments.environment import ToyEnvironment, AtariEnvironment
 
-SCALE = 10000
-
 flags = tf.app.flags
 
 # Deep q Network
-flags.DEFINE_string('data_format', 'NCHW', 'The format of convolutional filter. NHWC for CPU and NCHW for GPU')
+flags.DEFINE_boolean('use_gpu', True, 'Whether to use gpu or not. gpu use NHWC and gpu use NCHW for data_format')
 flags.DEFINE_string('agent_type', 'DDQN', 'The type of agent [DQN, DDQN]')
 flags.DEFINE_string('network_header_type', 'nips', 'The type of network header [mlp, nature, nips]')
 flags.DEFINE_string('network_output_type', 'dueling', 'The type of network output [normal, dueling]')
 
 # Environment
-flags.DEFINE_string('env_name', 'CorridorSmall-v5', 'The name of gym environment to use')
-flags.DEFINE_integer('n_action_repeat', 1, 'The number of actions to repeat')
+flags.DEFINE_string('env_name', 'Breakout-v0', 'The name of gym environment to use')
+flags.DEFINE_integer('n_action_repeat', 4, 'The number of actions to repeat')
 flags.DEFINE_integer('max_random_start', 30, 'The maximum number of NOOP actions at the beginning of an episode')
-flags.DEFINE_integer('history_length', 1, 'The length of history of observation to use as an input to DQN')
+flags.DEFINE_integer('history_length', 4, 'The length of history of observation to use as an input to DQN')
 flags.DEFINE_integer('max_r', +1, 'The maximum value of clipped reward')
 flags.DEFINE_integer('min_r', -1, 'The minimum value of clipped reward')
-flags.DEFINE_string('observation_dims', '[84, 84]', 'The dimension of gym observation')
+flags.DEFINE_string('observation_dims', '[80, 80]', 'The dimension of gym observation')
 flags.DEFINE_boolean('random_start', False, 'Whether to start with random state')
-flags.DEFINE_boolean('preprocess', False, 'Whether to preprocess the observation of environment')
 
 # Training
 flags.DEFINE_boolean('is_train', True, 'Whether to do training or testing')
@@ -37,23 +34,26 @@ flags.DEFINE_integer('min_delta', None, 'The minimum value of delta')
 flags.DEFINE_float('ep_start', 1., 'The value of epsilon at start in e-greedy')
 flags.DEFINE_float('ep_end', 0.01, 'The value of epsilnon at the end in e-greedy')
 flags.DEFINE_integer('batch_size', 32, 'The size of batch for minibatch training')
-flags.DEFINE_integer('max_grad_norm', 40, 'The maximum gradient norm of RMSProp optimizer')
-flags.DEFINE_integer('memory_size', 100 * SCALE, 'The size of experience memory')
+flags.DEFINE_integer('max_grad_norm', 40, 'The maximum norm of gradient while updating')
 flags.DEFINE_integer('discount_r', 0.99, 'The discount factor for reware')
 
 # Timer
-flags.DEFINE_integer('t_ep_end', 10 * SCALE, 'The time when epsilon reach ep_end')
-flags.DEFINE_integer('t_learn_start', 0.1 * SCALE, 'The time when to begin training')
-flags.DEFINE_integer('t_test', SCALE, 'The maximum number of t while training')
-flags.DEFINE_integer('t_train_max', 1000 * SCALE, 'The maximum number of t while training')
 flags.DEFINE_integer('t_train_freq', 4, '')
-flags.DEFINE_integer('t_target_q_update_freq', SCALE, '')
+
+# Below numbers will be multiplied by scale
+flags.DEFINE_integer('scale', 10000, 'The scale for big numbers')
+flags.DEFINE_integer('memory_size', 100, 'The size of experience memory (*= scale)')
+flags.DEFINE_integer('t_target_q_update_freq', 1, 'The frequency of target network to be updated (*= scale)')
+flags.DEFINE_integer('t_test', 1, 'The maximum number of t while training (*= scale)')
+flags.DEFINE_integer('t_ep_end', 10, 'The time when epsilon reach ep_end (*= scale)')
+flags.DEFINE_integer('t_train_max', 5000, 'The maximum number of t while training (*= scale)')
+flags.DEFINE_integer('t_learn_start', 5, 'The time when to begin training (*= scale)')
+flags.DEFINE_float('learning_rate_decay_step', 5, 'The learning rate of training (*= scale)')
 
 # Optimizer
 flags.DEFINE_float('learning_rate', 0.025, 'The learning rate of training')
 flags.DEFINE_float('learning_rate_minimum', 0.0025, 'The learning rate of training')
 flags.DEFINE_float('learning_rate_decay', 0.96, 'The learning rate of training')
-flags.DEFINE_float('learning_rate_decay_step', 1000, 'The learning rate of training')
 flags.DEFINE_float('decay', 0.99, 'Decay of RMSProp optimizer')
 flags.DEFINE_float('momentum', 0.0, 'Momentum of RMSProp optimizer')
 flags.DEFINE_float('gamma', 0.99, 'Discount factor of return')
@@ -85,11 +85,23 @@ tf.set_random_seed(conf.random_seed)
 random.seed(conf.random_seed)
 
 def main(_):
+  # preprocess
   conf.observation_dims = eval(conf.observation_dims)
 
-  model_dir = get_model_dir(conf,
-      ['max_random_start', 'n_worker', 't_save', 't_train', 'display', 'log_level', 'random_seed', 'tag'])
+  for flag in ['memory_size', 't_target_q_update_freq', 't_test',
+               't_ep_end', 't_train_max', 't_learn_start', 'learning_rate_decay_step']:
+    setattr(conf, flag, getattr(conf, flag) * conf.scale)
 
+  if conf.use_gpu:
+    conf.data_format = 'NCHW'
+  else:
+    conf.data_format = 'NHWC'
+
+  model_dir = get_model_dir(conf,
+      ['use_gpu', 'max_random_start', 'n_worker', 'is_train', 'memory_size',
+       't_save', 't_train', 'display', 'log_level', 'random_seed', 'tag', 'scale'])
+
+  # start
   with tf.Session() as sess:
     if 'Corridor' in conf.env_name:
       env = ToyEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
