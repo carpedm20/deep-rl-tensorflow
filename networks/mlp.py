@@ -49,9 +49,21 @@ class MLPSmall(Network):
           layer = output_activation_fn(layer)
         self.layers.append(layer)
 
-      self.outputs = layer
+      if network_type == 'normal':
+        self.outputs = layer
+      else:
+        w_name = 'adv_w%d' % idx
+        w = tf.get_variable(w_name,
+            [layer.get_shape().as_list()[-1]], initializer=weights_initializer, trainable=trainable)
+        self.var[w_name] = w
 
-      self.max_outputs = tf.reduce_max(self.outputs, reduction_indices=1)
-      self.outputs_idx = tf.placeholder('int32', [None, None], 'outputs_idx')
-      self.outputs_with_idx = tf.gather_nd(self.outputs, self.outputs_idx)
-      self.actions = tf.argmax(self.outputs, dimension=1)
+        if biases_initializer is None:
+          layer = tf.matmul(layer, w)
+        else:
+          b_name = 'adv_b%d' % idx
+          b = tf.get_variable(b_name,
+              [hidden_size], initializer=biases_initializer, trainable=trainable)
+          self.var[b_name] = b
+          layer = tf.nn.bias_add(tf.matmul(layer, w), b)
+
+      self.make_common_ops()

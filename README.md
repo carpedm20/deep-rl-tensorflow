@@ -2,14 +2,14 @@
 
 TensorFlow implementation of Deep Reinforcement Learning papers. This implementation contains:
 
-1. [Dueling Network Architectures for Deep Reinforcement Learning](http://arxiv.org/abs/1511.06581)
-2. [Deep Reinforcement Learning with Double Q-learning](http://arxiv.org/abs/1509.06461)
-3. [Deep Recurrent Q-Learning for Partially Observable MDPs](http://arxiv.org/abs/1507.06527) (in progress)
-4. [Asynchronous Methods for Deep Reinforcement Learning](http://arxiv.org/abs/1602.01783) (in progress)
-5. [Playing Atari with Deep Reinforcement Learning](http://arxiv.org/abs/1312.5602)
-6. [Human-Level Control through Deep Reinforcement Learning](http://home.uchicago.edu/~arij/journalclub/papers/2015_Mnih_et_al.pdf)
-7. [Deep Exploration via Bootstrapped DQN](http://arxiv.org/abs/1602.04621) (in progress)
-8. [Continuous Deep q-Learning with Model-based Acceleration](http://arxiv.org/abs/1603.00748) (in progress)
+[1] [Playing Atari with Deep Reinforcement Learning](http://arxiv.org/abs/1312.5602)  
+[2] [Human-Level Control through Deep Reinforcement Learning](http://home.uchicago.edu/~arij/journalclub/papers/2015_Mnih_et_al.pdf)  
+[3] [Deep Reinforcement Learning with Double Q-learning](http://arxiv.org/abs/1509.06461)  
+[4] [Dueling Network Architectures for Deep Reinforcement Learning](http://arxiv.org/abs/1511.06581)  
+[5] [Deep Recurrent Q-Learning for Partially Observable MDPs](http://arxiv.org/abs/1507.06527) (in progress)  
+[6] [Asynchronous Methods for Deep Reinforcement Learning](http://arxiv.org/abs/1602.01783) (in progress)  
+[7] [Deep Exploration via Bootstrapped DQN](http://arxiv.org/abs/1602.04621) (in progress)  
+[8] [Continuous Deep q-Learning with Model-based Acceleration](http://arxiv.org/abs/1603.00748) (in progress)  
 
 
 ## Requirements
@@ -26,6 +26,29 @@ TensorFlow implementation of Deep Reinforcement Learning papers. This implementa
 First, install prerequisites with:
 
     $ pip install -U gym[all] tqdm scipy
+
+Train with DQN model described in [[1]](#deep-reinforcement-learning-in-tensorflow):
+
+    $ python main.py --network_header_type=nips --env_name=BreakOut-v0
+
+Train with DQN model described in [[2]](#deep-reinforcement-learning-in-tensorflow):
+
+    $ python main.py --network_header_type=nips --env_name=BreakOut-v0
+
+Train with Double DQN model described in [[3]](#deep-reinforcement-learning-in-tensorflow):
+
+    $ python main.py --agent_type=DDQN --network_header_type=nature --env_name=BreakOut-v0
+
+Train with Double Deuling network described in [[4]](#deep-reinforcement-learning-in-tensorflow):
+
+    $ python main.py --agent_type=DDQN --network_output_type=duel --env_name=BreakOut-v0
+
+Train with MLP model described in [[4]](#deep-reinforcement-learning-in-tensorflow) with corridor environment for debugging:
+
+    $ python main.py --network_header_type=nips --observation_dims='[16]' --env_name=CorridorSmall-v5
+
+
+## Results
 
 (in progress)
 

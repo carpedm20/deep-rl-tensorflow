@@ -18,6 +18,12 @@ class Network(object):
     return self.outputs_with_idx.eval(
         {self.inputs: observation, self.outputs_idx: idx}, session=self.sess)
 
+  def make_common_ops(self):
+    self.max_outputs = tf.reduce_max(self.outputs, reduction_indices=1)
+    self.outputs_idx = tf.placeholder('int32', [None, None], 'outputs_idx')
+    self.outputs_with_idx = tf.gather_nd(self.outputs, self.outputs_idx)
+    self.actions = tf.argmax(self.outputs, dimension=1)
+
   def run_copy(self):
     if self.copy_op is None:
       raise Exception("run `create_copy_op` first before copy")

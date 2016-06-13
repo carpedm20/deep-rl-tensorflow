@@ -3,7 +3,7 @@ import tensorflow as tf
 
 from .ops import conv2d, linear, batch_sample
 
-class Network(object):
+class CNN(object):
   def __init__(self, sess, data_format, history_length,
                screen_height, screen_width,
                action_size, activation_fn=tf.nn.relu,
@@ -51,3 +51,5 @@ class Network(object):
         self.outputs = self.l3
     else:
       raise ValueError('Wrong DQN type: %s' % DQN_type)
+
+    self.make_common_ops()

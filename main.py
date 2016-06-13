@@ -4,6 +4,7 @@ import logging
 import tensorflow as tf
 
 from utils import get_model_dir
+from networks.cnn import CNN
 from networks.mlp import MLPSmall
 from agents.statistic import Statistic
 from environments.environment import ToyEnvironment
@@ -13,9 +14,10 @@ SCALE = 10000
 flags = tf.app.flags
 
 # Deep q Network
-#flags.DEFINE_string('DQN_type', 'nips', 'The type of DQN in A3C model. [nature, nips]')
 flags.DEFINE_string('data_format', 'NCHW', 'The format of convolutional filter. NHWC for CPU and NCHW for GPU')
 flags.DEFINE_string('agent_type', 'DDQN', 'The type of agent [DQN, DDQN]')
+flags.DEFINE_string('network_header_type', 'nips', 'The type of network header [mlp, nature, nips]')
+flags.DEFINE_string('network_output_type', 'duel', 'The type of network output [normal, duel]')
 
 # Environment
 flags.DEFINE_string('env_name', 'CorridorSmall-v5', 'The name of gym environment to use')
@@ -24,7 +26,7 @@ flags.DEFINE_integer('max_random_start', 30, 'The maximum number of NOOP actions
 flags.DEFINE_integer('history_length', 1, 'The length of history of observation to use as an input to DQN')
 flags.DEFINE_integer('max_r', +1, 'The maximum value of clipped reward')
 flags.DEFINE_integer('min_r', -1, 'The minimum value of clipped reward')
-flags.DEFINE_string('observation_dims', '[81]', 'The dimension of gym observation')
+flags.DEFINE_string('observation_dims', '[84, 84]', 'The dimension of gym observation')
 flags.DEFINE_boolean('random_start', False, 'Whether to start with random state')
 flags.DEFINE_boolean('preprocess', False, 'Whether to preprocess the observation of environment')
 
@@ -72,7 +74,7 @@ elif conf.agent_type == 'DDQN':
   from agents.double_q import DoubleQ
   TrainAgent = DoubleQ 
 else:
-  raise ValueError("Unknown agent_type: %s" % conf.agent_type)
+  raise ValueError('Unknown agent_type: %s' % conf.agent_type)
 
 logger = logging.getLogger()
 logger.propagate = False
@@ -92,22 +94,28 @@ def main(_):
     env = ToyEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
                       conf.observation_dims, conf.data_format, conf.display)
 
-    pred_network = MLPSmall(sess=sess,
-                            observation_dims=conf.observation_dims,
-                            history_length=conf.history_length,
-                            output_size=env.env.action_space.n,
-                            hidden_sizes=[50, 50, 50],
-                            hidden_activation_fn=tf.sigmoid,
-                            output_activation_fn=None,
-                            name='pred_network')
-    target_network = MLPSmall(sess=sess,
+    if conf.network_header_type in ['nature', 'nips']:
+      pred_network = CNN(sess=sess,)
+      target_network = CNN(sess=sess,)
+    elif conf.network_header_type == 'mlp':
+      pred_network = MLPSmall(sess=sess,
                               observation_dims=conf.observation_dims,
                               history_length=conf.history_length,
                               output_size=env.env.action_space.n,
                               hidden_sizes=[50, 50, 50],
                               hidden_activation_fn=tf.sigmoid,
-                              output_activation_fn=None, 
-                              name='target_network', trainable=False)
+                              output_activation_fn=None,
+                              name='pred_network')
+      target_network = MLPSmall(sess=sess,
+                                observation_dims=conf.observation_dims,
+                                history_length=conf.history_length,
+                                output_size=env.env.action_space.n,
+                                hidden_sizes=[50, 50, 50],
+                                hidden_activation_fn=tf.sigmoid,
+                                output_activation_fn=None, 
+                                name='target_network', trainable=False)
+    else:
+      raise ValueError('Unkown network_header_type: %s' % (conf.network_header_type))
 
     stat = Statistic(sess, conf.t_test, conf.t_learn_start, model_dir, pred_network.var.values())
     agent = TrainAgent(sess, pred_network, target_network, env, stat, conf)
