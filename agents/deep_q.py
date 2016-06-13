@@ -107,6 +107,8 @@ class DeepQ(Agent):
       s_t, action, reward, s_t_plus_1, terminal = self.experience.sample()
 
     terminal = np.array(terminal) + 0.
+
+    # Deep Q-learning
     max_q_t_plus_1 = self.target_network.calc_max_outputs(s_t_plus_1)
     target_q_t = (1. - terminal) * self.discount_r * max_q_t_plus_1 + reward
 
@@ -119,4 +121,4 @@ class DeepQ(Agent):
     return q_t, loss, True
 
   def update_target_q_network(self):
-    eelf.target_network.nun_copy()
+    self.target_network.run_copy()

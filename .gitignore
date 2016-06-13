@@ -6,7 +6,6 @@ samples
 *checkpoints/
 *.npy
 *.pkl
-*.png
 *.tgz
 *.zip
 *.tar.gz
