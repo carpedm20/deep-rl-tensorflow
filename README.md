@@ -29,19 +29,19 @@ First, install prerequisites with:
 
 Train with DQN model described in [[1]](#deep-reinforcement-learning-in-tensorflow):
 
-    $ python main.py --network_header_type=nips --env_name=BreakOut-v0
+    $ python main.py --network_header_type=nips --env_name=Breakout-v0
 
 Train with DQN model described in [[2]](#deep-reinforcement-learning-in-tensorflow):
 
-    $ python main.py --network_header_type=nature --env_name=BreakOut-v0
+    $ python main.py --network_header_type=nature --env_name=Breakout-v0
 
 Train with Double DQN model described in [[3]](#deep-reinforcement-learning-in-tensorflow):
 
-    $ python main.py --agent_type=DDQN --env_name=BreakOut-v0
+    $ python main.py --agent_type=DDQN --env_name=Breakout-v0
 
 Train with Deuling network with Double Q-learning described in [[4]](#deep-reinforcement-learning-in-tensorflow):
 
-    $ python main.py --agent_type=DDQN --network_output_type=duel --env_name=BreakOut-v0
+    $ python main.py --agent_type=DDQN --network_output_type=duel --env_name=Breakout-v0
 
 Train with MLP model described in [[4]](#deep-reinforcement-learning-in-tensorflow) with corridor environment for debugging:
 
@@ -54,7 +54,7 @@ Train with MLP model described in [[4]](#deep-reinforcement-learning-in-tensorfl
 
 ## Results
 
-Result of `Corridor-v5` in [[4]](#deep-reinforcement-learning-in-tensorflow) for DQN (purple), DDQN (red), Dueling DQN (green), Dueling DDQN (blue)
+Result of `Corridor-v5` in [[4]](#deep-reinforcement-learning-in-tensorflow) for DQN (purple), DDQN (red), Dueling DQN (green), Dueling DDQN (blue).
 
 ![model](assets/corridor_result.png)
 
