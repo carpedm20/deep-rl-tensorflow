@@ -25,7 +25,7 @@ flags.DEFINE_integer('history_length', 4, 'The length of history of observation 
 flags.DEFINE_integer('max_r', +1, 'The maximum value of clipped reward')
 flags.DEFINE_integer('min_r', -1, 'The minimum value of clipped reward')
 flags.DEFINE_string('observation_dims', '[80, 80]', 'The dimension of gym observation')
-flags.DEFINE_boolean('random_start', False, 'Whether to start with random state')
+flags.DEFINE_boolean('random_start', True, 'Whether to start with random state')
 
 # Training
 flags.DEFINE_boolean('is_train', True, 'Whether to do training or testing')
@@ -47,7 +47,7 @@ flags.DEFINE_integer('t_target_q_update_freq', 1, 'The frequency of target netwo
 flags.DEFINE_integer('t_test', 1, 'The maximum number of t while training (*= scale)')
 flags.DEFINE_integer('t_ep_end', 10, 'The time when epsilon reach ep_end (*= scale)')
 flags.DEFINE_integer('t_train_max', 5000, 'The maximum number of t while training (*= scale)')
-flags.DEFINE_integer('t_learn_start', 5, 'The time when to begin training (*= scale)')
+flags.DEFINE_float('t_learn_start', 5, 'The time when to begin training (*= scale)')
 flags.DEFINE_float('learning_rate_decay_step', 5, 'The learning rate of training (*= scale)')
 
 # Optimizer

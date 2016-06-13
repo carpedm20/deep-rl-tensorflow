@@ -43,12 +43,12 @@ Train with Deuling network with Double Q-learning described in [[4]](#deep-reinf
 
     $ python main.py --agent_type=DDQN --network_output_type=dueling --env_name=Breakout-v0
 
-Train with MLP model described in [[4]](#deep-reinforcement-learning-in-tensorflow) with corridor environment for debugging:
+Train with MLP model described in [[4]](#deep-reinforcement-learning-in-tensorflow) with corridor environment (useful for debugging):
 
-    $ python main.py --network_header_type=mlp --network_output_type=normal --agent_type=DQN --observation_dims='[16]' --env_name=CorridorSmall-v5 --display=True --t_learn_start=0.1 --learning_rate_decay_step=0.1
-    $ python main.py --network_header_type=mlp --network_output_type=normal --agent_type=DDQN --observation_dims='[16]' --env_name=CorridorSmall-v5 --display=True --t_learn_start=0.1 --learning_rate_decay_step=0.1
-    $ python main.py --network_header_type=mlp --network_output_type=dueling --agent_type=DQN --observation_dims='[16]' --env_name=CorridorSmall-v5 --display=True --t_learn_start=0.1 --learning_rate_decay_step=0.1
-    $ python main.py --network_header_type=mlp --network_output_type=dueling --agent_type=DDQN --observation_dims='[16]' --env_name=CorridorSmall-v5 --display=True --t_learn_start=0.1 --learning_rate_decay_step=0.1
+    $ python main.py --network_header_type=mlp --network_output_type=normal --agent_type=DQN --observation_dims='[16]' --env_name=CorridorSmall-v5 --display=True --t_learn_start=0.1 --learning_rate_decay_step=0.1 --history_length=1 --n_action_repeat=1 --random_start=False
+    $ python main.py --network_header_type=mlp --network_output_type=normal --agent_type=DDQN --observation_dims='[16]' --env_name=CorridorSmall-v5 --display=True --t_learn_start=0.1 --learning_rate_decay_step=0.1 --history_length=1 --n_action_repeat=1 --random_start=False
+    $ python main.py --network_header_type=mlp --network_output_type=dueling --agent_type=DQN --observation_dims='[16]' --env_name=CorridorSmall-v5 --display=True --t_learn_start=0.1 --learning_rate_decay_step=0.1 --history_length=1 --n_action_repeat=1 --random_start=False
+    $ python main.py --network_header_type=mlp --network_output_type=dueling --agent_type=DDQN --observation_dims='[16]' --env_name=CorridorSmall-v5 --display=True --t_learn_start=0.1 --learning_rate_decay_step=0.1 --history_length=1 --n_action_repeat=1 --random_start=False
 
 
 
