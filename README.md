@@ -41,7 +41,7 @@ Train with Double DQN model described in [[3]](#deep-reinforcement-learning-in-t
 
 Train with Deuling network with Double Q-learning described in [[4]](#deep-reinforcement-learning-in-tensorflow):
 
-    $ python main.py --agent_type=DDQN --network_output_type=duel --env_name=Breakout-v0
+    $ python main.py --agent_type=DDQN --network_output_type=dueling --env_name=Breakout-v0
 
 Train with MLP model described in [[4]](#deep-reinforcement-learning-in-tensorflow) with corridor environment for debugging:
 

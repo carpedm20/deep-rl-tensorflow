@@ -13,9 +13,9 @@ flags = tf.app.flags
 
 # Deep q Network
 flags.DEFINE_boolean('use_gpu', True, 'Whether to use gpu or not. gpu use NHWC and gpu use NCHW for data_format')
-flags.DEFINE_string('agent_type', 'DDQN', 'The type of agent [DQN, DDQN]')
+flags.DEFINE_string('agent_type', 'DQN', 'The type of agent [DQN, DDQN]')
 flags.DEFINE_string('network_header_type', 'nips', 'The type of network header [mlp, nature, nips]')
-flags.DEFINE_string('network_output_type', 'dueling', 'The type of network output [normal, dueling]')
+flags.DEFINE_string('network_output_type', 'normal', 'The type of network output [normal, dueling]')
 
 # Environment
 flags.DEFINE_string('env_name', 'Breakout-v0', 'The name of gym environment to use')
