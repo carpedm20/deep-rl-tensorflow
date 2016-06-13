@@ -102,7 +102,7 @@ class AtariEnvironment(Environment):
     if not terminal:
       self.lives = current_lives
 
-    return screen, reward, terminal, {}
+    return self.preprocess(screen), reward, terminal, {}
 
   def preprocess(self, raw_screen):
     y = 0.2126 * raw_screen[:, :, 0] + 0.7152 * raw_screen[:, :, 1] + 0.0722 * raw_screen[:, :, 2]
