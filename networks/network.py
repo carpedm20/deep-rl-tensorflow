@@ -14,6 +14,10 @@ class Network(object):
   def calc_max_outputs(self, observation):
     return self.max_outputs.eval({self.inputs: observation}, session=self.sess)
 
+  def calc_outputs_with_idx(self, observation, idx):
+    return self.outputs_with_idx.eval(
+        {self.inputs: observation, self.outputs_idx: idx}, session=self.sess)
+
   def run_copy(self):
     if self.copy_op is None:
       raise Exception("run `create_copy_op` first before copy")

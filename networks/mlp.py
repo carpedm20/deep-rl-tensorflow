@@ -15,7 +15,7 @@ class MLPSmall(Network):
                weights_initializer=initializers.xavier_initializer(),
                biases_initializer=tf.zeros_initializer,
                hidden_activation_fn=tf.nn.relu,
-               output_activation_fn=tf.nn.softmax,
+               output_activation_fn=None,
                name='MLPSmall'):
     super(MLPSmall, self).__init__(sess)
 
@@ -50,5 +50,8 @@ class MLPSmall(Network):
         self.layers.append(layer)
 
       self.outputs = layer
-      self.max_outputs = tf.reduce_max(layer, reduction_indices=1)
+
+      self.max_outputs = tf.reduce_max(self.outputs, reduction_indices=1)
+      self.outputs_idx = tf.placeholder('int32', [None, None], 'outputs_idx')
+      self.outputs_with_idx = tf.gather_nd(self.outputs, self.outputs_idx)
       self.actions = tf.argmax(self.outputs, dimension=1)

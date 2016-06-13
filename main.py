@@ -4,7 +4,6 @@ import logging
 import tensorflow as tf
 
 from utils import get_model_dir
-from agents.deep_q import DeepQ
 from networks.mlp import MLPSmall
 from agents.statistic import Statistic
 from environments.environment import ToyEnvironment
@@ -16,6 +15,7 @@ flags = tf.app.flags
 # Deep q Network
 #flags.DEFINE_string('DQN_type', 'nips', 'The type of DQN in A3C model. [nature, nips]')
 flags.DEFINE_string('data_format', 'NCHW', 'The format of convolutional filter. NHWC for CPU and NCHW for GPU')
+flags.DEFINE_string('agent_type', 'DDQN', 'The type of agent [DQN, DDQN]')
 
 # Environment
 flags.DEFINE_string('env_name', 'CorridorSmall-v5', 'The name of gym environment to use')
@@ -30,6 +30,8 @@ flags.DEFINE_boolean('preprocess', False, 'Whether to preprocess the observation
 
 # Training
 flags.DEFINE_boolean('is_train', True, 'Whether to do training or testing')
+flags.DEFINE_integer('max_delta', None, 'The maximum value of delta')
+flags.DEFINE_integer('min_delta', None, 'The minimum value of delta')
 flags.DEFINE_float('ep_start', 1., 'The value of epsilon at start in e-greedy')
 flags.DEFINE_float('ep_end', 0.01, 'The value of epsilnon at the end in e-greedy')
 flags.DEFINE_integer('batch_size', 32, 'The size of batch for minibatch training')
@@ -59,8 +61,18 @@ flags.DEFINE_float('beta', 0.01, 'Beta of RMSProp optimizer')
 flags.DEFINE_boolean('display', False, 'Whether to do display the game screen or not')
 flags.DEFINE_string('log_level', 'INFO', 'Log level [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
 flags.DEFINE_integer('random_seed', 123, 'Value of random seed')
+flags.DEFINE_string('tag', '', 'The name of tag for a model, only for debugging')
 
 conf = flags.FLAGS
+
+if conf.agent_type == 'DQN':
+  from agents.deep_q import DeepQ
+  TrainAgent = DeepQ
+elif conf.agent_type == 'DDQN':
+  from agents.double_q import DoubleQ
+  TrainAgent = DoubleQ 
+else:
+  raise ValueError("Unknown agent_type: %s" % conf.agent_type)
 
 logger = logging.getLogger()
 logger.propagate = False
@@ -74,7 +86,7 @@ def main(_):
   conf.observation_dims = eval(conf.observation_dims)
 
   model_dir = get_model_dir(conf,
-      ['log_level', 'max_random_start', 'n_worker', 'random_seed', 't_save', 't_train', 'display'])
+      ['max_random_start', 'n_worker', 't_save', 't_train', 'display', 'log_level', 'random_seed', 'tag'])
 
   with tf.Session() as sess:
     env = ToyEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
@@ -98,7 +110,7 @@ def main(_):
                               name='target_network', trainable=False)
 
     stat = Statistic(sess, conf.t_test, conf.t_learn_start, model_dir, pred_network.var.values())
-    agent = DeepQ(sess, pred_network, target_network, env, stat, conf)
+    agent = TrainAgent(sess, pred_network, target_network, env, stat, conf)
 
     agent.train(conf.t_train_max)
 
