@@ -59,13 +59,14 @@ class AtariEnvironment(Environment):
     if self.display:
       self.env.render()
 
-    if from_random_game == False:
+    if from_random_game:
+      return screen, 0, False
+    else:
       self.lives = self.env.ale.lives()
-
-    return self.preprocess(screen), 0, False
+      return self.preprocess(screen), 0, False
 
   def new_random_game(self):
-    screen, reward, terminal = self.new_game(true)
+    screen, reward, terminal = self.new_game(True)
 
     for idx in range(random.randrange(self.max_random_start)):
       screen, reward, terminal, _ = self.env.step(0)
@@ -77,7 +78,7 @@ class AtariEnvironment(Environment):
 
     self.lives = self.env.ale.lives()
 
-    return self.preprocess(screen), 0, false
+    return self.preprocess(screen), 0, False
 
   def step(self, action, is_training):
     if action == -1:
