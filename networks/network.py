@@ -45,10 +45,12 @@ class Network(object):
       # self.outputs = self.value + self.advantage
 
       # Max Dueling
-      # self.outputs = self.value + (self.advantage - tf.reduce_max(self.advantage, reduction_indices=1))
+      # self.outputs = self.value + (self.advantage - 
+      #     tf.reduce_max(self.advantage, reduction_indices=1, keep_dims=True))
 
       # Average Dueling
-      self.outputs = self.value + (self.advantage - tf.reduce_mean(self.advantage, reduction_indices=1))
+      self.outputs = self.value + (self.advantage - 
+          tf.reduce_mean(self.advantage, reduction_indices=1, keep_dims=True))
 
     self.max_outputs = tf.reduce_max(self.outputs, reduction_indices=1)
     self.outputs_idx = tf.placeholder('int32', [None, None], 'outputs_idx')

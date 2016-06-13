@@ -35,7 +35,7 @@ class Environment(object):
     return self.preprocess(self.env.reset()), 0, False
 
   def new_random_game(self):
-    raise NotImplementedError()
+    return self.new_game()
 
   def step(self, action, is_training=False):
     observation, reward, terminal, info = self.env.step(action)
