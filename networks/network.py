@@ -41,7 +41,14 @@ class Network(object):
           linear(layer, output_size, weights_initializer,
             biases_initializer, output_activation_fn, trainable, name='adv_lin_out')
 
-      self.outputs = self.value + self.advantage
+      # Simple Dueling
+      # self.outputs = self.value + self.advantage
+
+      # Max Dueling
+      # self.outputs = self.value + (self.advantage - tf.reduce_max(self.advantage, reduction_indices=1))
+
+      # Average Dueling
+      self.outputs = self.value + (self.advantage - tf.reduce_mean(self.advantage, reduction_indices=1))
 
     self.max_outputs = tf.reduce_max(self.outputs, reduction_indices=1)
     self.outputs_idx = tf.placeholder('int32', [None, None], 'outputs_idx')
