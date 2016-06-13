@@ -17,7 +17,7 @@ flags = tf.app.flags
 flags.DEFINE_string('data_format', 'NCHW', 'The format of convolutional filter. NHWC for CPU and NCHW for GPU')
 flags.DEFINE_string('agent_type', 'DDQN', 'The type of agent [DQN, DDQN]')
 flags.DEFINE_string('network_header_type', 'nips', 'The type of network header [mlp, nature, nips]')
-flags.DEFINE_string('network_output_type', 'duel', 'The type of network output [normal, duel]')
+flags.DEFINE_string('network_output_type', 'dueling', 'The type of network output [normal, dueling]')
 
 # Environment
 flags.DEFINE_string('env_name', 'CorridorSmall-v5', 'The name of gym environment to use')
@@ -102,17 +102,15 @@ def main(_):
                               observation_dims=conf.observation_dims,
                               history_length=conf.history_length,
                               output_size=env.env.action_space.n,
-                              hidden_sizes=[50, 50, 50],
                               hidden_activation_fn=tf.sigmoid,
-                              output_activation_fn=None,
+                              network_output_type=conf.network_output_type,
                               name='pred_network')
       target_network = MLPSmall(sess=sess,
                                 observation_dims=conf.observation_dims,
                                 history_length=conf.history_length,
                                 output_size=env.env.action_space.n,
-                                hidden_sizes=[50, 50, 50],
                                 hidden_activation_fn=tf.sigmoid,
-                                output_activation_fn=None, 
+                                network_output_type=conf.network_output_type,
                                 name='target_network', trainable=False)
     else:
       raise ValueError('Unkown network_header_type: %s' % (conf.network_header_type))

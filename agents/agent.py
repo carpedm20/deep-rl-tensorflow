@@ -74,4 +74,5 @@ class Agent(object):
         self.actions: action,
         self.pred_network.inputs: s_t,
       })
-    logger.debug("q: %s, a: %d, l: %.2f" % (q_t, a, loss))
+
+    logger.info("q: %s, a: %d, l: %.2f" % (q_t, a, loss))

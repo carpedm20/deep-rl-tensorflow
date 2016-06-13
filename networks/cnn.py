@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 
-from .ops import conv2d, linear, batch_sample
+from .layers import conv2d, linear, batch_sample
 
 class CNN(object):
   def __init__(self, sess, data_format, history_length,
