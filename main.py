@@ -146,7 +146,10 @@ def main(_):
     stat = Statistic(sess, conf.t_test, conf.t_learn_start, model_dir, pred_network.var.values())
     agent = TrainAgent(sess, pred_network, target_network, env, stat, conf)
 
-    agent.train(conf.t_train_max)
+    if conf.is_train:
+      agent.train(conf.t_train_max)
+    else:
+      agent.play(conf.ep_end)
 
 if __name__ == '__main__':
   tf.app.run()

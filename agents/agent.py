@@ -1,3 +1,4 @@
+import time
 import random
 import numpy as np
 from tqdm import tqdm
@@ -5,6 +6,9 @@ import tensorflow as tf
 from logging import getLogger
 
 logger = getLogger(__name__)
+
+def get_time():
+  return time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
 
 class Agent(object):
   def train(self, t_max):
@@ -39,6 +43,50 @@ class Agent(object):
                           ep, q, loss, is_update, self.learning_rate_op)
       if terminal:
         observation, reward, terminal = self.new_game()
+
+  def play(self, test_ep, n_step=10000, n_episode=100):
+    tf.initialize_all_variables().run()
+
+    self.stat.load_model()
+    self.target_network.run_copy()
+
+    if not self.env.display:
+      gym_dir = '/tmp/%s-%s' % (self.env_name, get_time())
+      self.env.env.monitor.start(gym_dir)
+
+    best_reward, best_idx = 0, 0
+    for idx in xrange(n_episode):
+      observation, reward, terminal = self.new_game()
+      current_reward = 0
+
+      for _ in range(self.history_length):
+        self.history.add(observation)
+
+      for self.t in tqdm(range(n_step), ncols=70):
+        # 1. predict
+        action = self.predict(self.history.get(), test_ep)
+        # 2. act
+        observation, reward, terminal, info = self.env.step(action, is_training=True)
+        # 3. observe
+        q, loss, is_update = self.observe(observation, reward, action, terminal)
+
+        logger.debug("a: %d, r: %d, t: %d, q: %.4f, l: %.2f" % \
+            (action, reward, terminal, np.mean(q), loss))
+
+        if terminal:
+          break
+
+      if current_reward > best_reward:
+        best_reward = current_reward
+        best_idx = idx
+
+      print "="*30
+      print " [%d] Best reward : %d" % (best_idx, best_reward)
+      print "="*30
+
+    if not self.env.display:
+      self.env.env.monitor.close()
+      #gym.upload(gym_dir, writeup='https://github.com/devsisters/DQN-tensorflow', api_key='')
 
   def predict(self, s_t, ep):
     if random.random() < ep:
