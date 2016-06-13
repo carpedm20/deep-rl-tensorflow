@@ -45,7 +45,7 @@ flags.DEFINE_integer('scale', 10000, 'The scale for big numbers')
 flags.DEFINE_integer('memory_size', 100, 'The size of experience memory (*= scale)')
 flags.DEFINE_integer('t_target_q_update_freq', 1, 'The frequency of target network to be updated (*= scale)')
 flags.DEFINE_integer('t_test', 1, 'The maximum number of t while training (*= scale)')
-flags.DEFINE_integer('t_ep_end', 10, 'The time when epsilon reach ep_end (*= scale)')
+flags.DEFINE_integer('t_ep_end', 100, 'The time when epsilon reach ep_end (*= scale)')
 flags.DEFINE_integer('t_train_max', 5000, 'The maximum number of t while training (*= scale)')
 flags.DEFINE_float('t_learn_start', 5, 'The time when to begin training (*= scale)')
 flags.DEFINE_float('learning_rate_decay_step', 5, 'The learning rate of training (*= scale)')
@@ -144,7 +144,7 @@ def main(_):
       raise ValueError('Unkown network_header_type: %s' % (conf.network_header_type))
 
     stat = Statistic(sess, conf.t_test, conf.t_learn_start, model_dir, pred_network.var.values())
-    agent = TrainAgent(sess, pred_network, target_network, env, stat, conf)
+    agent = TrainAgent(sess, pred_network, env, stat, conf, target_network=target_network)
 
     if conf.is_train:
       agent.train(conf.t_train_max)

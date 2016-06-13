@@ -11,45 +11,8 @@ from .experience import Experience
 logger = getLogger(__name__)
 
 class DeepQ(Agent):
-  def __init__(self, sess, pred_network, target_network, env, stat, conf):
-    self.sess = sess
-    self.stat = stat
-
-    self.ep_start = conf.ep_start
-    self.ep_end = conf.ep_end
-    self.history_length = conf.history_length
-    self.t_ep_end = conf.t_ep_end
-    self.t_learn_start = conf.t_learn_start
-    self.t_train_freq = conf.t_train_freq
-    self.t_target_q_update_freq = conf.t_target_q_update_freq
-
-    self.discount_r = conf.discount_r
-    self.min_r = conf.min_r
-    self.max_r = conf.max_r
-    self.min_delta = conf.min_delta
-    self.max_delta = conf.max_delta
-    self.max_grad_norm = conf.max_grad_norm
-    self.observation_dims = conf.observation_dims
-
-    self.learning_rate = conf.learning_rate
-    self.learning_rate_minimum = conf.learning_rate_minimum
-    self.learning_rate_decay = conf.learning_rate_decay
-    self.learning_rate_decay_step = conf.learning_rate_decay_step
-
-    self.pred_network = pred_network
-    self.target_network = target_network
-    self.target_network.create_copy_op(self.pred_network)
-
-    self.env = env 
-    self.experience = Experience(conf.data_format,
-        conf.batch_size, conf.history_length, conf.memory_size, conf.observation_dims)
-    self.history = History(conf.data_format,
-        conf.batch_size, conf.history_length, conf.observation_dims)
-
-    if conf.random_start:
-      self.new_game = self.env.new_random_game
-    else:
-      self.new_game = self.env.new_game
+  def __init__(self, sess, pred_network, env, stat, conf, target_network=None):
+    super(DeepQ, self).__init__(sess, pred_network, target_network, env, stat, conf)
 
     # Optimizer
     with tf.variable_scope('optimizer'):
@@ -119,6 +82,3 @@ class DeepQ(Agent):
     })
 
     return q_t, loss, True
-
-  def update_target_q_network(self):
-    self.target_network.run_copy()

@@ -10,12 +10,9 @@ from .experience import Experience
 
 logger = getLogger(__name__)
 
-class SARSA(Agent):
-  def __init__(self, sess, pred_network, 
-               env, stat, conf, target_network=None, policy_network=None):
-    super(DeepQ, self).__init__(sess, pred_network, target_network, policy_network, env, stat, conf)
-
-    raise Exception("policy is not implemented yet")
+class NStepQ(Agent):
+  def __init__(self, sess, pred_network, env, stat, conf, target_network=None):
+    super(DeepQ, self).__init__(sess, pred_network, target_network, env, stat, conf)
 
     # Optimizer
     with tf.variable_scope('optimizer'):
@@ -47,6 +44,38 @@ class SARSA(Agent):
         if grad is not None:
           grads_and_vars[idx] = (tf.clip_by_norm(grad, self.max_grad_norm), var)
       self.optim = optimizer.apply_gradients(grads_and_vars)
+
+  # Add accumulated gradients for n-step Q-learning
+  def make_accumulated_gradients(self):
+    reset_accum_grads = []
+    new_grads_and_vars = []
+
+    # 1. Prepare accum_grads
+    self.accum_grads = {}
+    self.add_accum_grads = {}
+
+    for step, network in enumerate(self.networks):
+      grads_and_vars = self.global_optim.compute_gradients(network.total_loss, network.w.values())
+      _add_accum_grads = []
+
+      for grad, var in tuple(grads_and_vars):
+        if grad is not None:
+          shape = grad.get_shape().as_list()
+
+          name = 'accum/%s' % "/".join(var.name.split(':')[0].split('/')[-3:])
+          if step == 0:
+            self.accum_grads[name] = tf.Variable(
+                tf.zeros(shape), trainable=False, name=name)
+
+            global_v = global_var[re.sub(r'.*\/A3C_\d+\/', '', var.name)]
+            new_grads_and_vars.append((tf.clip_by_norm(self.accum_grads[name].ref(), self.max_grad_norm), global_v))
+
+            reset_accum_grads.append(self.accum_grads[name].assign(tf.zeros(shape)))
+
+          _add_accum_grads.append(tf.assign_add(self.accum_grads[name], grad))
+
+      # 2. Add gradient to accum_grads
+      self.add_accum_grads[step] = tf.group(*_add_accum_grads)
 
   def observe(self, observation, reward, action, terminal):
     reward = max(self.min_r, min(self.max_r, reward))
