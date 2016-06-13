@@ -7,7 +7,7 @@ from utils import get_model_dir
 from networks.cnn import CNN
 from networks.mlp import MLPSmall
 from agents.statistic import Statistic
-from environments.environment import ToyEnvironment
+from environments.environment import ToyEnvironment, AtariEnvironment
 
 SCALE = 10000
 
@@ -91,12 +91,28 @@ def main(_):
       ['max_random_start', 'n_worker', 't_save', 't_train', 'display', 'log_level', 'random_seed', 'tag'])
 
   with tf.Session() as sess:
-    env = ToyEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
-                      conf.observation_dims, conf.data_format, conf.display)
+    if 'Corridor' in conf.env_name:
+      env = ToyEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
+                        conf.observation_dims, conf.data_format, conf.display)
+    else:
+      env = AtariEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
+                        conf.observation_dims, conf.data_format, conf.display)
 
     if conf.network_header_type in ['nature', 'nips']:
-      pred_network = CNN(sess=sess,)
-      target_network = CNN(sess=sess,)
+      pred_network = CNN(sess=sess,
+                         data_format=conf.data_format,
+                         history_length=conf.history_length,
+                         observation_dims=conf.observation_dims,
+                         output_size=env.env.action_space.n,
+                         network_header_type=conf.network_header_type,
+                         name='pred_network', trainable=True)
+      target_network = CNN(sess=sess,
+                           data_format=conf.data_format,
+                           history_length=conf.history_length,
+                           observation_dims=conf.observation_dims,
+                           output_size=env.env.action_space.n,
+                           network_header_type=conf.network_header_type,
+                           name='target_network', trainable=False)
     elif conf.network_header_type == 'mlp':
       pred_network = MLPSmall(sess=sess,
                               observation_dims=conf.observation_dims,
@@ -104,7 +120,7 @@ def main(_):
                               output_size=env.env.action_space.n,
                               hidden_activation_fn=tf.sigmoid,
                               network_output_type=conf.network_output_type,
-                              name='pred_network')
+                              name='pred_network', trainable=True)
       target_network = MLPSmall(sess=sess,
                                 observation_dims=conf.observation_dims,
                                 history_length=conf.history_length,

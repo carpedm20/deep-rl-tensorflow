@@ -1,22 +1,33 @@
 import os
 import tensorflow as tf
 
-from .layers import conv2d, linear, batch_sample
+from .layers import *
+from .network import Network
 
-class CNN(object):
-  def __init__(self, sess, data_format, history_length,
-               screen_height, screen_width,
-               action_size, activation_fn=tf.nn.relu,
-               initializer=tf.truncated_normal_initializer(0, 0.02), 
-               gamma=0.01, beta=0.0, global_network=None, global_optim=None, DQN_type=''):
+class CNN(Network):
+  def __init__(self, sess,
+               data_format,
+               history_length,
+               observation_dims,
+               output_size, 
+               trainable=True,
+               hidden_activation_fn=tf.nn.relu,
+               output_activation_fn=None,
+               weights_initializer=initializers.xavier_initializer(),
+               biases_initializer=tf.zeros_initializer,
+               value_hidden_sizes=[512],
+               advantage_hidden_sizes=[512],
+               network_output_type='dueling',
+               network_header_type='nips',
+               name='CNN'):
     self.sess = sess
 
     if data_format == 'NHWC':
       self.inputs = tf.placeholder('float32',
-          [None, screen_width, screen_height, history_length], name='inputs')
+          [None] + observation_dims + [history_length], name='inputs')
     elif data_format == 'NCHW':
       self.inputs = tf.placeholder('float32',
-          [None, history_length, screen_width, screen_height], name='inputs')
+          [None, history_length] + observation_dims, name='inputs')
     else:
       raise ValueError("unknown data_format : %s" % data_format)
 
@@ -30,26 +41,36 @@ class CNN(object):
     self.var = {}
     self.l0 = tf.div(self.inputs, 255.)
 
-    if DQN_type.lower() == 'nature':
-      with tf.variable_scope('Nature_DQN'), tf.device(device):
+    with tf.variable_scope(name), tf.device(device):
+      if network_header_type.lower() == 'nature':
         self.l1, self.var['l1_w'], self.var['l1_b'] = conv2d(self.l0,
-            32, [8, 8], [4, 4], initializer, activation_fn, data_format, name='l1_conv')
+            32, [8, 8], [4, 4], weights_initializer, biases_initializer,
+            hidden_activation_fn, data_format, name='l1_conv')
         self.l2, self.var['l2_w'], self.var['l2_b'] = conv2d(self.l1,
-            64, [4, 4], [2, 2], initializer, activation_fn, data_format, name='l2_conv')
+            64, [4, 4], [2, 2], weights_initializer, biases_initializer,
+            hidden_activation_fn, data_format, name='l2_conv')
         self.l3, self.var['l3_w'], self.var['l3_b'] = conv2d(self.l2,
-            64, [3, 3], [1, 1], initializer, activation_fn, data_format, name='l3_conv')
+            64, [3, 3], [1, 1], weights_initializer, biases_initializer,
+            hidden_activation_fn, data_format, name='l3_conv')
         self.l4, self.var['l4_w'], self.var['l4_b'] = \
-            linear(self.l3, 512, activation_fn=activation_fn, name='l4_linear')
-        self.outputs = self.l4
-    elif DQN_type.lower() == 'nips':
+            linear(self.l3, 512, weights_initializer, biases_initializer,
+            hidden_activation_fn, data_format, name='l4_conv')
+        layer = self.l4
+      elif network_header_type.lower() == 'nips':
         self.l1, self.var['l1_w'], self.var['l1_b'] = conv2d(self.l0,
-            16, [8, 8], [4, 4], initializer, activation_fn, data_format, name='l1_conv')
+            16, [8, 8], [4, 4], weights_initializer, biases_initializer,
+            hidden_activation_fn, data_format, name='l1_conv')
         self.l2, self.var['l2_w'], self.var['l2_b'] = conv2d(self.l1,
-            32, [4, 4], [2, 2], initializer, activation_fn, data_format, name='l2_conv')
+            32, [4, 4], [2, 2], weights_initializer, biases_initializer,
+            hidden_activation_fn, data_format, name='l2_conv')
         self.l3, self.var['l3_w'], self.var['l3_b'] = \
-            linear(self.l2, 256, activation_fn=activation_fn, name='l3_linear')
-        self.outputs = self.l3
-    else:
-      raise ValueError('Wrong DQN type: %s' % DQN_type)
+            linear(self.l2, 256, weights_initializer, biases_initializer,
+            hidden_activation_fn, data_format, name='l3_conv')
+        layer = self.l3
+      else:
+        raise ValueError('Wrong DQN type: %s' % network_header_type)
 
-    self.make_common_ops()
+      self.build_output_ops(layer, network_output_type,
+          value_hidden_sizes, advantage_hidden_sizes, output_size,
+          weights_initializer, biases_initializer, hidden_activation_fn,
+          output_activation_fn, trainable)

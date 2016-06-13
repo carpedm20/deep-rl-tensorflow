@@ -6,11 +6,13 @@ def conv2d(x,
            output_dim,
            kernel_size,
            stride,
-           initializer=tf.contrib.layers.xavier_initializer(),
+           weights_initializer=tf.contrib.layers.xavier_initializer(),
+           biases_initializer=tf.zeros_initializer,
            activation_fn=tf.nn.relu,
            data_format='NHWC',
            padding='VALID',
-           name='conv2d'):
+           name='conv2d',
+           trainable=True):
   with tf.variable_scope(name):
     if data_format == 'NCHW':
       stride = [1, 1, stride[0], stride[1]]
@@ -19,10 +21,12 @@ def conv2d(x,
       stride = [1, stride[0], stride[1], 1]
       kernel_shape = [kernel_size[0], kernel_size[1], x.get_shape()[-1], output_dim]
 
-    w = tf.get_variable('w', kernel_shape, tf.float32, initializer=initializer)
+    w = tf.get_variable('w', kernel_shape, 
+        tf.float32, initializer=weights_initializer, trainable=trainable)
     conv = tf.nn.conv2d(x, w, stride, padding, data_format=data_format)
 
-    b = tf.get_variable('biases', [output_dim], initializer=tf.constant_initializer(0.0))
+    b = tf.get_variable('b', [output_dim],
+        tf.float32, initializer=biases_initializer, trainable=trainable)
     out = tf.nn.bias_add(conv, b, data_format)
 
   if activation_fn != None:
