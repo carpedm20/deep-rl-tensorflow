@@ -27,11 +27,9 @@ First, install prerequisites with:
 
     $ pip install -U gym[all] tqdm scipy
 
-Add `--use_gpu=False` if you don't use any gpus.
+Train with DQN model described in [[1]](#deep-reinforcement-learning-in-tensorflow) without gpu:
 
-Train with DQN model described in [[1]](#deep-reinforcement-learning-in-tensorflow):
-
-    $ python main.py --network_header_type=nips --env_name=Breakout-v0
+    $ python main.py --network_header_type=nips --env_name=Breakout-v0 --use_gpu=False
 
 Train with DQN model described in [[2]](#deep-reinforcement-learning-in-tensorflow):
 
