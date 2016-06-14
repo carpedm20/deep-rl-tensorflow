@@ -52,6 +52,12 @@ class ToyEnvironment(Environment):
     return new_obs
 
 class AtariEnvironment(Environment):
+  def __init__(self, env_name, n_action_repeat, max_random_start,
+               observation_dims, data_format, display):
+    super(AtariEnvironment, self).__init__(env_name, 
+        n_action_repeat, max_random_start, observation_dims, data_format, display)
+    self.previous_screen = None
+
   def new_game(self, from_random_game=False):
     screen = self.env.reset()
     screen, reward, terminal, _ = self.env.step(0)
@@ -63,7 +69,8 @@ class AtariEnvironment(Environment):
       return screen, 0, False
     else:
       self.lives = self.env.ale.lives()
-      return self.preprocess(screen), 0, False
+      terminal = False
+      return self.preprocess(screen, terminal), 0, terminal
 
   def new_random_game(self):
     screen, reward, terminal = self.new_game(True)
@@ -78,7 +85,8 @@ class AtariEnvironment(Environment):
 
     self.lives = self.env.ale.lives()
 
-    return self.preprocess(screen), 0, False
+    terminal = False
+    return self.preprocess(screen, terminal), 0, terminal
 
   def step(self, action, is_training):
     if action == -1:
@@ -103,9 +111,17 @@ class AtariEnvironment(Environment):
     if not terminal:
       self.lives = current_lives
 
-    return self.preprocess(screen), reward, terminal, {}
+    return self.preprocess(screen, terminal), reward, terminal, {}
 
-  def preprocess(self, raw_screen):
+  def preprocess(self, raw_screen, terminal):
+    if not terminal and self.previous_screen is not None:
+      _previous_screen = raw_screen
+      raw_screen = np.maximum(raw_screen, self.previous_screen)
+      self.previous_screen = _previous_screen
+
+    if self.previous_screen is None:
+      self.previous_screen = raw_screen
+
     y = 0.2126 * raw_screen[:, :, 0] + 0.7152 * raw_screen[:, :, 1] + 0.0722 * raw_screen[:, :, 2]
     y = y.astype(np.uint8)
     y_screen = imresize(y, self.observation_dims)
