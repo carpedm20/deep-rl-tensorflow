@@ -11,6 +11,8 @@ TensorFlow implementation of Deep Reinforcement Learning papers. This implementa
 [7] [Asynchronous Methods for Deep Reinforcement Learning](http://arxiv.org/abs/1602.01783) (in progress)  
 [8] [Continuous Deep q-Learning with Model-based Acceleration](http://arxiv.org/abs/1603.00748) (in progress)  
 
+**Currently training of CNN model with Atari environment doesn't work yet**
+
 
 ## Requirements
 
