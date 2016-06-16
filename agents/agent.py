@@ -99,7 +99,7 @@ class Agent(object):
       gym_dir = '/tmp/%s-%s' % (self.env_name, get_time())
       self.env.env.monitor.start(gym_dir)
 
-    best_reward, best_idx = 0, 0
+    best_reward, best_idx, best_count = 0, 0, 0
     for idx in xrange(n_episode):
       observation, reward, terminal = self.new_game()
       current_reward = 0
@@ -117,6 +117,7 @@ class Agent(object):
 
         logger.debug("a: %d, r: %d, t: %d, q: %.4f, l: %.2f" % \
             (action, reward, terminal, np.mean(q), loss))
+        current_reward += reward
 
         if terminal:
           break
@@ -124,9 +125,12 @@ class Agent(object):
       if current_reward > best_reward:
         best_reward = current_reward
         best_idx = idx
+        best_count = 0
+      elif current_reward == best_reward:
+        best_count += 1
 
       print "="*30
-      print " [%d] Best reward : %d" % (best_idx, best_reward)
+      print " [%d] Best reward : %d (dup-percent: %d/%d)" % (best_idx, best_reward, best_count, n_episode)
       print "="*30
 
     if not self.env.display:
