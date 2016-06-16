@@ -29,7 +29,8 @@ class Environment(object):
     self.data_format = data_format
     self.observation_dims = observation_dims
 
-    logger.info("Using %d actions : %s" % (self.action_size, ", ".join(self.env.get_action_meanings())))
+    if hasattr(self.env, 'get_action_meanings'):
+      logger.info("Using %d actions : %s" % (self.action_size, ", ".join(self.env.get_action_meanings())))
 
   def new_game(self):
     return self.preprocess(self.env.reset()), 0, False

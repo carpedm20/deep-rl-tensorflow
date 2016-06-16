@@ -101,7 +101,7 @@ def main(_):
 
   # start
   with tf.Session() as sess:
-    if 'Corridor' in conf.env_name:
+    if any(name in conf.env_name for name in ['Corridor', 'FrozenLake']) :
       env = ToyEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
                         conf.observation_dims, conf.data_format, conf.display)
     else:
