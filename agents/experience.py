@@ -49,7 +49,7 @@ class Experience(object):
     rewards = self.rewards[indexes]
     terminals = self.terminals[indexes]
 
-    if self.data_format == 'NHWC':
+    if self.data_format == 'NHWC' and len(self.prestates.shape) == 4:
       return np.transpose(self.prestates, (0, 2, 3, 1)), actions, \
         rewards, np.transpose(self.poststates, (0, 2, 3, 1)), terminals
     else:

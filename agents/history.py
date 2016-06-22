@@ -13,7 +13,7 @@ class History:
     self.history *= 0
 
   def get(self):
-    if self.data_format == 'NHWC':
+    if self.data_format == 'NHWC' and len(self.history.shape) == 3:
       return np.transpose(self.history, (1, 2, 0))
     else:
       return self.history
