@@ -35,8 +35,8 @@ flags.DEFINE_integer('min_delta', None, 'The minimum value of delta')
 flags.DEFINE_float('ep_start', 1., 'The value of epsilon at start in e-greedy')
 flags.DEFINE_float('ep_end', 0.01, 'The value of epsilnon at the end in e-greedy')
 flags.DEFINE_integer('batch_size', 32, 'The size of batch for minibatch training')
-flags.DEFINE_integer('max_grad_norm', 40, 'The maximum norm of gradient while updating')
-flags.DEFINE_integer('discount_r', 0.99, 'The discount factor for reware')
+flags.DEFINE_float('max_grad_norm', 40, 'The maximum norm of gradient while updating')
+flags.DEFINE_float('discount_r', 0.99, 'The discount factor for reward')
 
 # Timer
 flags.DEFINE_integer('t_train_freq', 4, '')
