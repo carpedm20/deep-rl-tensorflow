@@ -3,9 +3,11 @@ import tensorflow as tf
 from .layers import *
 
 class Network(object):
-  def __init__(self, sess):
+  def __init__(self, sess, name):
     self.sess = sess
     self.copy_op = None
+    self.name = name
+    self.var = {}
 
   def build_output_ops(self, layer, network_output_type, 
       value_hidden_sizes, advantage_hidden_sizes, output_size, 
@@ -14,7 +16,7 @@ class Network(object):
     if network_output_type == 'normal':
       self.outputs, self.var['w_out'], self.var['b_out'] = \
           linear(layer, output_size, weights_initializer,
-            biases_initializer, output_activation_fn, trainable)
+                 biases_initializer, output_activation_fn, trainable, name='out')
     elif network_output_type == 'dueling':
       # Dueling Network
       assert len(value_hidden_sizes) != 0 and len(value_hidden_sizes) != 0
@@ -64,7 +66,7 @@ class Network(object):
       self.sess.run(self.copy_op)
 
   def create_copy_op(self, network):
-    with tf.variable_scope('copy_from_target'):
+    with tf.variable_scope(self.name):
       copy_ops = []
 
       for name in self.var.keys():
