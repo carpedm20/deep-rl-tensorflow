@@ -14,13 +14,13 @@ class CNN(Network):
                hidden_activation_fn=tf.nn.relu,
                output_activation_fn=None,
                weights_initializer=initializers.xavier_initializer(),
-               biases_initializer=tf.zeros_initializer,
+               biases_initializer=tf.constant_initializer(0.1),
                value_hidden_sizes=[512],
                advantage_hidden_sizes=[512],
                network_output_type='dueling',
                network_header_type='nips',
                name='CNN'):
-    self.sess = sess
+    super(CNN, self).__init__(sess, name)
 
     if data_format == 'NHWC':
       self.inputs = tf.placeholder('float32',
@@ -38,7 +38,6 @@ class CNN(Network):
     else:
       raise ValueError('Unknown data_format: %s' % data_format)
 
-    self.var = {}
     self.l0 = tf.div(self.inputs, 255.)
 
     with tf.variable_scope(name), tf.device(device):
