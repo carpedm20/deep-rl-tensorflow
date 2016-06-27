@@ -31,17 +31,10 @@ class CNN(Network):
     else:
       raise ValueError("unknown data_format : %s" % data_format)
 
-    if data_format == 'NCHW':
-      device = '/gpu:0'
-    elif data_format == 'NHWC':
-      device = '/cpu:0'
-    else:
-      raise ValueError('Unknown data_format: %s' % data_format)
-
     self.var = {}
     self.l0 = tf.div(self.inputs, 255.)
 
-    with tf.variable_scope(name), tf.device(device):
+    with tf.variable_scope(name):
       if network_header_type.lower() == 'nature':
         self.l1, self.var['l1_w'], self.var['l1_b'] = conv2d(self.l0,
             32, [8, 8], [4, 4], weights_initializer, biases_initializer,

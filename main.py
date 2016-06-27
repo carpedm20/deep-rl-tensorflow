@@ -35,7 +35,7 @@ flags.DEFINE_integer('min_delta', None, 'The minimum value of delta')
 flags.DEFINE_float('ep_start', 1., 'The value of epsilon at start in e-greedy')
 flags.DEFINE_float('ep_end', 0.01, 'The value of epsilnon at the end in e-greedy')
 flags.DEFINE_integer('batch_size', 32, 'The size of batch for minibatch training')
-flags.DEFINE_integer('max_grad_norm', 40, 'The maximum norm of gradient while updating')
+flags.DEFINE_integer('max_grad_norm', None, 'The maximum norm of gradient while updating')
 flags.DEFINE_integer('discount_r', 0.99, 'The discount factor for reware')
 
 # Timer
@@ -52,7 +52,7 @@ flags.DEFINE_float('t_learn_start', 5, 'The time when to begin training (*= scal
 flags.DEFINE_float('learning_rate_decay_step', 5, 'The learning rate of training (*= scale)')
 
 # Optimizer
-flags.DEFINE_float('learning_rate', 0.025, 'The learning rate of training')
+flags.DEFINE_float('learning_rate', 0.0025, 'The learning rate of training')
 flags.DEFINE_float('learning_rate_minimum', 0.0025, 'The learning rate of training')
 flags.DEFINE_float('learning_rate_decay', 0.96, 'The learning rate of training')
 flags.DEFINE_float('decay', 0.99, 'Decay of RMSProp optimizer')

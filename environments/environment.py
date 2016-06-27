@@ -57,7 +57,6 @@ class AtariEnvironment(Environment):
                observation_dims, data_format, display):
     super(AtariEnvironment, self).__init__(env_name, 
         n_action_repeat, max_random_start, observation_dims, data_format, display)
-    self.previous_screen = None
 
   def new_game(self, from_random_game=False):
     screen = self.env.reset()
@@ -115,14 +114,6 @@ class AtariEnvironment(Environment):
     return self.preprocess(screen, terminal), reward, terminal, {}
 
   def preprocess(self, raw_screen, terminal):
-    if not terminal and self.previous_screen is not None:
-      _previous_screen = raw_screen
-      raw_screen = np.maximum(raw_screen, self.previous_screen)
-      self.previous_screen = _previous_screen
-
-    if self.previous_screen is None:
-      self.previous_screen = raw_screen
-
     y = 0.2126 * raw_screen[:, :, 0] + 0.7152 * raw_screen[:, :, 1] + 0.0722 * raw_screen[:, :, 2]
     y = y.astype(np.uint8)
     y_screen = imresize(y, self.observation_dims)
