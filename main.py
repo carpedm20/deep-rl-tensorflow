@@ -52,8 +52,8 @@ flags.DEFINE_float('t_learn_start', 5, 'The time when to begin training (*= scal
 flags.DEFINE_float('learning_rate_decay_step', 5, 'The learning rate of training (*= scale)')
 
 # Optimizer
-flags.DEFINE_float('learning_rate', 0.025, 'The learning rate of training')
-flags.DEFINE_float('learning_rate_minimum', 0.0025, 'The learning rate of training')
+flags.DEFINE_float('learning_rate', 0.00025, 'The learning rate of training')
+flags.DEFINE_float('learning_rate_minimum', 0.00025, 'The learning rate of training')
 flags.DEFINE_float('learning_rate_decay', 0.96, 'The learning rate of training')
 flags.DEFINE_float('decay', 0.99, 'Decay of RMSProp optimizer')
 flags.DEFINE_float('momentum', 0.0, 'Momentum of RMSProp optimizer')
