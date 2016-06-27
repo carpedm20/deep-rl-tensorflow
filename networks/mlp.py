@@ -20,9 +20,8 @@ class MLPSmall(Network):
                advantage_hidden_sizes=[25],
                network_output_type='dueling',
                name='MLPSmall'):
-    super(MLPSmall, self).__init__(sess)
+    super(MLPSmall, self).__init__(sess, name)
 
-    self.var = {}
     with tf.variable_scope(name):
       layer = self.inputs = tf.placeholder('float32', [batch_size, history_length] + observation_dims, 'inputs')
 

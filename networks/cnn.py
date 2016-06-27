@@ -14,13 +14,13 @@ class CNN(Network):
                hidden_activation_fn=tf.nn.relu,
                output_activation_fn=None,
                weights_initializer=initializers.xavier_initializer(),
-               biases_initializer=tf.zeros_initializer,
+               biases_initializer=tf.constant_initializer(0.1),
                value_hidden_sizes=[512],
                advantage_hidden_sizes=[512],
                network_output_type='dueling',
                network_header_type='nips',
                name='CNN'):
-    self.sess = sess
+    super(CNN, self).__init__(sess, name)
 
     if data_format == 'NHWC':
       self.inputs = tf.placeholder('float32',

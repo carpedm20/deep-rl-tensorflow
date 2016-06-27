@@ -29,6 +29,11 @@ First, install prerequisites with:
 
     $ pip install -U gym[all] tqdm scipy
 
+Don't forget to also install the latest
+[TensorFlow](https://www.tensorflow.org/). Also note that you need to install
+the dependences of [`doom-py`](https://github.com/openai/doom-py) which is
+required by `gym[all]`
+
 Train with DQN model described in [[1]](#deep-reinforcement-learning-in-tensorflow) without gpu:
 
     $ python main.py --network_header_type=nips --env_name=Breakout-v0 --use_gpu=False
