@@ -65,6 +65,15 @@ flags.DEFINE_boolean('display', False, 'Whether to do display the game screen or
 flags.DEFINE_string('log_level', 'INFO', 'Log level [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
 flags.DEFINE_integer('random_seed', 123, 'Value of random seed')
 flags.DEFINE_string('tag', '', 'The name of tag for a model, only for debugging')
+flags.DEFINE_string('gpu_fraction', '1/1', 'idx / # of gpu fraction e.g. 1/3, 2/3, 3/3')
+
+def calc_gpu_fraction(fraction_string):
+  idx, num = fraction_string.split('/')
+  idx, num = float(idx), float(num)
+
+  fraction = 1 / (num - idx + 1)
+  print " [*] GPU : %.4f" % fraction
+  return fraction
 
 conf = flags.FLAGS
 
@@ -96,11 +105,14 @@ def main(_):
     conf.data_format = 'NHWC'
 
   model_dir = get_model_dir(conf,
-      ['use_gpu', 'max_random_start', 'n_worker', 'is_train', 'memory_size',
+      ['use_gpu', 'max_random_start', 'n_worker', 'is_train', 'memory_size', 'gpu_fraction',
        't_save', 't_train', 'display', 'log_level', 'random_seed', 'tag', 'scale'])
 
   # start
-  with tf.Session() as sess:
+  gpu_options = tf.GPUOptions(
+      per_process_gpu_memory_fraction=calc_gpu_fraction(conf.gpu_fraction))
+
+  with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     if any(name in conf.env_name for name in ['Corridor', 'FrozenLake']) :
       env = ToyEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
                         conf.observation_dims, conf.data_format, conf.display)
