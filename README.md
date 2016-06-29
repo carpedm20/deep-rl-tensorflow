@@ -11,8 +11,6 @@ TensorFlow implementation of Deep Reinforcement Learning papers. This implementa
 [7] [Asynchronous Methods for Deep Reinforcement Learning](http://arxiv.org/abs/1602.01783) (in progress)  
 [8] [Continuous Deep q-Learning with Model-based Acceleration](http://arxiv.org/abs/1603.00748) (in progress)  
 
-**Currently training of CNN model with Atari environment doesn't work yet**
-
 
 ## Requirements
 
@@ -64,7 +62,11 @@ Result of `Corridor-v5` in [[4]](#deep-reinforcement-learning-in-tensorflow) for
 
 ![model](assets/corridor_result.png)
 
-(in progress)
+Result of `Breakout-v0' for DQN without frame-skip (white-blue), DQN with frame-skip (light purple), Dueling DDQN (dark blue).
+
+![model](assets/A1_A4_double_dueling.png)
+
+The hyperparameters and gradient clipping are not implemented as it is as [[4]](#deep-reinforcement-learning-in-tensorflow).
 
 
 ## References
