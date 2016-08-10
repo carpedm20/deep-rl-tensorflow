@@ -9,18 +9,19 @@ class Network(object):
     self.name = name
     self.var = {}
 
-  def build_output_ops(self, layer, network_output_type, 
+  def build_output_ops(self, input_layer, network_output_type, 
       value_hidden_sizes, advantage_hidden_sizes, output_size, 
       weights_initializer, biases_initializer, hidden_activation_fn, 
       output_activation_fn, trainable):
     if network_output_type == 'normal':
       self.outputs, self.var['w_out'], self.var['b_out'] = \
-          linear(layer, output_size, weights_initializer,
+          linear(input_layer, output_size, weights_initializer,
                  biases_initializer, output_activation_fn, trainable, name='out')
     elif network_output_type == 'dueling':
       # Dueling Network
-      assert len(value_hidden_sizes) != 0 and len(value_hidden_sizes) != 0
+      assert len(value_hidden_sizes) != 0 and len(advantage_hidden_sizes) != 0
 
+      layer = input_layer
       for idx, hidden_size in enumerate(value_hidden_sizes):
         w_name, b_name = 'val_w_%d' % idx, 'val_b_%d' % idx
 
@@ -32,6 +33,7 @@ class Network(object):
           linear(layer, 1, weights_initializer,
             biases_initializer, output_activation_fn, trainable, name='val_lin_out')
 
+      layer = input_layer
       for idx, hidden_size in enumerate(advantage_hidden_sizes):
         w_name, b_name = 'adv_w_%d' % idx, 'adv_b_%d' % idx
 
