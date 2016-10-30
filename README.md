@@ -25,7 +25,7 @@ TensorFlow implementation of Deep Reinforcement Learning papers. This implementa
 
 First, install prerequisites with:
 
-    $ pip install -U gym[all] tqdm scipy
+    $ pip install -U 'gym[all]' tqdm scipy
 
 Don't forget to also install the latest
 [TensorFlow](https://www.tensorflow.org/). Also note that you need to install
