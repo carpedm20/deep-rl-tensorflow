@@ -25,6 +25,7 @@ class Agent(object):
     self.t_learn_start = conf.t_learn_start
     self.t_train_freq = conf.t_train_freq
     self.t_target_q_update_freq = conf.t_target_q_update_freq
+    self.env_name = conf.env_name
 
     self.discount_r = conf.discount_r
     self.min_r = conf.min_r
@@ -100,7 +101,11 @@ class Agent(object):
       self.env.env.monitor.start(gym_dir)
 
     best_reward, best_idx, best_count = 0, 0, 0
-    for idx in xrange(n_episode):
+    try:
+      itr = xrange(n_episode)
+    except NameError:
+      itr = range(n_episode)
+    for idx in itr:
       observation, reward, terminal = self.new_game()
       current_reward = 0
 
@@ -129,9 +134,9 @@ class Agent(object):
       elif current_reward == best_reward:
         best_count += 1
 
-      print "="*30
-      print " [%d] Best reward : %d (dup-percent: %d/%d)" % (best_idx, best_reward, best_count, n_episode)
-      print "="*30
+      print ("="*30)
+      print (" [%d] Best reward : %d (dup-percent: %d/%d)" % (best_idx, best_reward, best_count, n_episode))
+      print ("="*30)
 
     if not self.env.display:
       self.env.env.monitor.close()
