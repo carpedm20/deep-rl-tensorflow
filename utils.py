@@ -12,7 +12,7 @@ def get_model_dir(config, exceptions=None):
   attrs = config.__dict__['__flags']
   pp(attrs)
 
-  keys = attrs.keys()
+  keys = list(attrs.keys())
   keys.sort()
   keys.remove('env_name')
   keys = ['env_name'] + keys

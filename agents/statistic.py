@@ -16,7 +16,7 @@ class Statistic(object):
       self.t_add_op = self.t_op.assign_add(1)
 
     self.model_dir = model_dir
-    self.saver = tf.train.Saver(variables + [self.t_op], max_to_keep=max_to_keep)
+    self.saver = tf.train.Saver(list(variables) + [self.t_op], max_to_keep=max_to_keep)
     self.writer = tf.train.SummaryWriter('./logs/%s' % self.model_dir, self.sess.graph)
 
     with tf.variable_scope('summary'):
@@ -81,8 +81,8 @@ class Statistic(object):
         except:
           max_ep_reward, min_ep_reward, avg_ep_reward = 0, 0, 0
 
-        print '\navg_r: %.4f, avg_l: %.6f, avg_q: %3.6f, avg_ep_r: %.4f, max_ep_r: %.4f, min_ep_r: %.4f, # game: %d' \
-            % (avg_reward, avg_loss, avg_q, avg_ep_reward, max_ep_reward, min_ep_reward, self.num_game)
+        print ('\navg_r: %.4f, avg_l: %.6f, avg_q: %3.6f, avg_ep_r: %.4f, max_ep_r: %.4f, min_ep_r: %.4f, # game: %d' \
+            % (avg_reward, avg_loss, avg_q, avg_ep_reward, max_ep_reward, min_ep_reward, self.num_game))
 
         if self.max_avg_ep_reward * 0.9 <= avg_ep_reward:
           assert t == self.get_t()

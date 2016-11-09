@@ -1,6 +1,9 @@
 import numpy as np
-import StringIO, sys
-
+import sys
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from gym import utils
 from gym import spaces
 from gym.envs.toy_text import discrete
