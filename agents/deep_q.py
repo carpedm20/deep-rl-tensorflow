@@ -21,10 +21,11 @@ class DeepQ(Agent):
       pred_q = tf.reduce_sum(self.pred_network.outputs * actions_one_hot, reduction_indices=1, name='q_acted')
 
       self.delta = self.targets - pred_q
-      if self.max_delta and self.min_delta:
-        self.delta = tf.clip_by_value(self.delta, self.min_delta, self.max_delta, name='clipped_delta')
+      self.clipped_error = tf.select(tf.abs(self.delta) < 1.0,
+                                     0.5 * tf.square(self.delta),
+                                     tf.abs(self.delta) - 0.5, name='clipped_error')
 
-      self.loss = tf.reduce_mean(tf.square(self.delta), name='loss')
+      self.loss = tf.reduce_mean(self.clipped_error, name='loss')
 
       self.learning_rate_op = tf.maximum(self.learning_rate_minimum,
           tf.train.exponential_decay(
