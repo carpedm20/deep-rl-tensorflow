@@ -116,7 +116,7 @@ class Agent(object):
         # 1. predict
         action = self.predict(self.history.get(), test_ep)
         # 2. act
-        observation, reward, terminal, info = self.env.step(action, is_training=True)
+        observation, reward, terminal, info = self.env.step(action, is_training=False)
         # 3. observe
         q, loss, is_update = self.observe(observation, reward, action, terminal)
 
