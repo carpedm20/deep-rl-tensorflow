@@ -27,6 +27,7 @@ flags.DEFINE_integer('max_r', +1, 'The maximum value of clipped reward')
 flags.DEFINE_integer('min_r', -1, 'The minimum value of clipped reward')
 flags.DEFINE_string('observation_dims', '[80, 80]', 'The dimension of gym observation')
 flags.DEFINE_boolean('random_start', True, 'Whether to start with random state')
+flags.DEFINE_boolean('use_cumulated_reward', False, 'Whether to use cumulated reward or not')
 
 # Training
 flags.DEFINE_boolean('is_train', True, 'Whether to do training or testing')
@@ -114,11 +115,13 @@ def main(_):
 
   with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     if any(name in conf.env_name for name in ['Corridor', 'FrozenLake']) :
-      env = ToyEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
-                        conf.observation_dims, conf.data_format, conf.display)
+      env = ToyEnvironment(conf.env_name, conf.n_action_repeat,
+                           conf.max_random_start, conf.observation_dims,
+                           conf.data_format, conf.display, conf.use_cumulated_reward)
     else:
-      env = AtariEnvironment(conf.env_name, conf.n_action_repeat, conf.max_random_start,
-                        conf.observation_dims, conf.data_format, conf.display)
+      env = AtariEnvironment(conf.env_name, conf.n_action_repeat,
+                             conf.max_random_start, conf.observation_dims,
+                             conf.data_format, conf.display, conf.use_cumulated_reward)
 
     if conf.network_header_type in ['nature', 'nips']:
       pred_network = CNN(sess=sess,

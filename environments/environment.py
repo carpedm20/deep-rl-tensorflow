@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class Environment(object):
   def __init__(self, env_name, n_action_repeat, max_random_start,
-               observation_dims, data_format, display):
+               observation_dims, data_format, display, use_cumulated_reward=False):
     self.env = gym.make(env_name)
 
     self.n_action_repeat = n_action_repeat
@@ -28,6 +28,7 @@ class Environment(object):
     self.display = display
     self.data_format = data_format
     self.observation_dims = observation_dims
+    self.use_cumulated_reward = use_cumulated_reward
 
     if hasattr(self.env, 'get_action_meanings'):
       logger.info("Using %d actions : %s" % (self.action_size, ", ".join(self.env.get_action_meanings())))
@@ -54,9 +55,9 @@ class ToyEnvironment(Environment):
 
 class AtariEnvironment(Environment):
   def __init__(self, env_name, n_action_repeat, max_random_start,
-               observation_dims, data_format, display):
+               observation_dims, data_format, display, use_cumulated_reward):
     super(AtariEnvironment, self).__init__(env_name, 
-        n_action_repeat, max_random_start, observation_dims, data_format, display)
+        n_action_repeat, max_random_start, observation_dims, data_format, display, use_cumulated_reward)
 
   def new_game(self, from_random_game=False):
     screen = self.env.reset()
@@ -111,7 +112,10 @@ class AtariEnvironment(Environment):
     if not terminal:
       self.lives = current_lives
 
-    return self.preprocess(screen, terminal), cumulated_reward, terminal, {}
+    if self.use_cumulated_reward:
+      return self.preprocess(screen, terminal), cumulated_reward, terminal, {}
+    else:
+      return self.preprocess(screen, terminal), reward, terminal, {}
 
   def preprocess(self, raw_screen, terminal):
     y = 0.2126 * raw_screen[:, :, 0] + 0.7152 * raw_screen[:, :, 1] + 0.0722 * raw_screen[:, :, 2]

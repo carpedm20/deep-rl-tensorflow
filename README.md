@@ -18,7 +18,7 @@ TensorFlow implementation of Deep Reinforcement Learning papers. This implementa
 - [gym](https://github.com/openai/gym)
 - [tqdm](https://github.com/tqdm/tqdm)
 - [OpenCV2](http://opencv.org/) or [Scipy](https://www.scipy.org/)
-- [TensorFlow](https://www.tensorflow.org/)
+- [TensorFlow 0.12.0](https://www.tensorflow.org/)
 
 
 ## Usage

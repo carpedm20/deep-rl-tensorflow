@@ -17,7 +17,7 @@ class Statistic(object):
 
     self.model_dir = model_dir
     self.saver = tf.train.Saver(list(variables) + [self.t_op], max_to_keep=max_to_keep)
-    self.writer = tf.train.SummaryWriter('./logs/%s' % self.model_dir, self.sess.graph)
+    self.writer = tf.summary.FileWriter('./logs/%s' % self.model_dir, self.sess.graph)
 
     with tf.variable_scope('summary'):
       scalar_summary_tags = [
@@ -31,13 +31,13 @@ class Statistic(object):
 
       for tag in scalar_summary_tags:
         self.summary_placeholders[tag] = tf.placeholder('float32', None, name=tag.replace(' ', '_'))
-        self.summary_ops[tag]  = tf.scalar_summary(tag, self.summary_placeholders[tag])
+        self.summary_ops[tag]  = tf.summary.scalar(tag, self.summary_placeholders[tag])
 
       histogram_summary_tags = ['episode/rewards', 'episode/actions']
 
       for tag in histogram_summary_tags:
         self.summary_placeholders[tag] = tf.placeholder('float32', None, name=tag.replace(' ', '_'))
-        self.summary_ops[tag]  = tf.histogram_summary(tag, self.summary_placeholders[tag])
+        self.summary_ops[tag]  = tf.summary.histogram(tag, self.summary_placeholders[tag])
 
 
   def reset(self):

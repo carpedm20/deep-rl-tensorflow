@@ -21,9 +21,9 @@ class DeepQ(Agent):
       pred_q = tf.reduce_sum(self.pred_network.outputs * actions_one_hot, reduction_indices=1, name='q_acted')
 
       self.delta = self.targets - pred_q
-      self.clipped_error = tf.select(tf.abs(self.delta) < 1.0,
-                                     0.5 * tf.square(self.delta),
-                                     tf.abs(self.delta) - 0.5, name='clipped_error')
+      self.clipped_error = tf.where(tf.abs(self.delta) < 1.0,
+                                    0.5 * tf.square(self.delta),
+                                    tf.abs(self.delta) - 0.5, name='clipped_error')
 
       self.loss = tf.reduce_mean(self.clipped_error, name='loss')
 
