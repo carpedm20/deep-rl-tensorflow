@@ -15,6 +15,8 @@ class Async(Agent):
   def __init__(self, sess, pred_network, env, stat, conf, target_network=None):
     super(DeepQ, self).__init__(sess, pred_network, target_network, env, stat, conf)
 
+    raise Exception("[!] Not fully implemented yet")
+
     # Optimizer
     with tf.variable_scope('optimizer'):
       self.targets = tf.placeholder('float32', [None], name='target_q_t')
