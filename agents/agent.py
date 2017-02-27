@@ -58,7 +58,7 @@ class Agent(object):
       self.new_game = self.env.new_game
 
   def train(self, t_max):
-    tf.initialize_all_variables().run()
+    tf.global_variables_initializer().run()
 
     self.stat.load_model()
     self.target_network.run_copy()
