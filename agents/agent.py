@@ -1,3 +1,4 @@
+import gym
 import time
 import random
 import numpy as np
@@ -98,7 +99,7 @@ class Agent(object):
 
     if not self.env.display:
       gym_dir = '/tmp/%s-%s' % (self.env_name, get_time())
-      self.env.env.monitor.start(gym_dir)
+      env = gym.wrappers.Monitor(self.env.env, gym_dir)
 
     best_reward, best_idx, best_count = 0, 0, 0
     try:
@@ -138,8 +139,7 @@ class Agent(object):
       print (" [%d] Best reward : %d (dup-percent: %d/%d)" % (best_idx, best_reward, best_count, n_episode))
       print ("="*30)
 
-    if not self.env.display:
-      self.env.env.monitor.close()
+    #if not self.env.display:
       #gym.upload(gym_dir, writeup='https://github.com/devsisters/DQN-tensorflow', api_key='')
 
   def predict(self, s_t, ep):
