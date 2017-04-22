@@ -69,7 +69,7 @@ class AtariEnvironment(Environment):
     if from_random_game:
       return screen, 0, False
     else:
-      self.lives = self.env.ale.lives()
+      self.lives = self.env.unwrapped.ale.lives()
       terminal = False
       return self.preprocess(screen, terminal), 0, terminal
 
@@ -84,7 +84,7 @@ class AtariEnvironment(Environment):
     if self.display:
       self.env.render()
 
-    self.lives = self.env.ale.lives()
+    self.lives = self.env.unwrapped.ale.lives()
 
     terminal = False
     return self.preprocess(screen, terminal), 0, terminal
@@ -99,7 +99,7 @@ class AtariEnvironment(Environment):
     for _ in range(self.n_action_repeat):
       screen, reward, terminal, _ = self.env.step(action)
       cumulated_reward += reward
-      current_lives = self.env.ale.lives()
+      current_lives = self.env.unwrapped.ale.lives()
 
       if is_training and self.lives > current_lives:
         terminal = True
