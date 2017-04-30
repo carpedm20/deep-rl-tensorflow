@@ -20,7 +20,7 @@ flags.DEFINE_string('network_output_type', 'normal', 'The type of network output
 
 # Environment
 flags.DEFINE_string('env_name', 'Breakout-v0', 'The name of gym environment to use')
-flags.DEFINE_integer('n_action_repeat', 4, 'The number of actions to repeat')
+flags.DEFINE_integer('n_action_repeat', 1, 'The number of actions to repeat')
 flags.DEFINE_integer('max_random_start', 30, 'The maximum number of NOOP actions at the beginning of an episode')
 flags.DEFINE_integer('history_length', 4, 'The length of history of observation to use as an input to DQN')
 flags.DEFINE_integer('max_r', +1, 'The maximum value of clipped reward')
