@@ -66,7 +66,8 @@ flags.DEFINE_boolean('display', False, 'Whether to do display the game screen or
 flags.DEFINE_string('log_level', 'INFO', 'Log level [DEBUG, INFO, WARNING, ERROR, CRITICAL]')
 flags.DEFINE_integer('random_seed', 123, 'Value of random seed')
 flags.DEFINE_string('tag', '', 'The name of tag for a model, only for debugging')
-flags.DEFINE_string('gpu_fraction', '1/1', 'idx / # of gpu fraction e.g. 1/3, 2/3, 3/3')
+flags.DEFINE_string('allow_soft_placement', True, 'Whether to use part or all of a GPU')
+#flags.DEFINE_string('gpu_fraction', '1/1', 'idx / # of gpu fraction e.g. 1/3, 2/3, 3/3')
 
 def calc_gpu_fraction(fraction_string):
   idx, num = fraction_string.split('/')
@@ -110,10 +111,14 @@ def main(_):
        't_save', 't_train', 'display', 'log_level', 'random_seed', 'tag', 'scale'])
 
   # start
-  gpu_options = tf.GPUOptions(
-      per_process_gpu_memory_fraction=calc_gpu_fraction(conf.gpu_fraction))
+  #gpu_options = tf.GPUOptions(
+  #    per_process_gpu_memory_fraction=calc_gpu_fraction(conf.gpu_fraction))
 
-  with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+  sess_config = tf.ConfigProto(
+      log_device_placement=False, allow_soft_placement=conf.allow_soft_placement)
+  sess_config.gpu_options.allow_growth = conf.allow_soft_placement
+
+  with tf.Session(config=sess_config) as sess:
     if any(name in conf.env_name for name in ['Corridor', 'FrozenLake']) :
       env = ToyEnvironment(conf.env_name, conf.n_action_repeat,
                            conf.max_random_start, conf.observation_dims,
