@@ -4,8 +4,8 @@ from .layers import *
 from .network import Network
 
 class MLPSmall(Network):
-  def __init__(self,
-               sess,
+  def __init__(self, sess,
+               data_format,
                observation_dims,
                history_length,
                output_size,
@@ -23,7 +23,14 @@ class MLPSmall(Network):
     super(MLPSmall, self).__init__(sess, name)
 
     with tf.variable_scope(name):
-      layer = self.inputs = tf.placeholder('float32', [batch_size, history_length] + observation_dims, 'inputs')
+      if data_format == 'NHWC':
+        layer = self.inputs = tf.placeholder(
+          'float32', [batch_size] + observation_dims + [history_length], 'inputs')
+      elif data_format == 'NCHW':
+        layer = self.inputs = tf.placeholder(
+          'float32', [batch_size, history_length] + observation_dims, 'inputs')
+      else:
+        raise ValueError("unknown data_format : %s" % data_format)
 
       if len(layer.get_shape().as_list()) == 3:
         assert layer.get_shape().as_list()[1] == 1
