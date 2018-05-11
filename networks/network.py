@@ -54,12 +54,12 @@ class Network(object):
 
       # Average Dueling
       self.outputs = self.value + (self.advantage - 
-          tf.reduce_mean(self.advantage, reduction_indices=1, keep_dims=True))
+          tf.reduce_mean(self.advantage, reduction_indices=1, keepdims=True))
 
     self.max_outputs = tf.reduce_max(self.outputs, reduction_indices=1)
     self.outputs_idx = tf.placeholder('int32', [None, None], 'outputs_idx')
     self.outputs_with_idx = tf.gather_nd(self.outputs, self.outputs_idx)
-    self.actions = tf.argmax(self.outputs, dimension=1)
+    self.actions = tf.argmax(self.outputs, axis=1)
 
   def run_copy(self):
     if self.copy_op is None:

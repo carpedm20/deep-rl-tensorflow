@@ -1,18 +1,13 @@
 import os
 import time
-import pprint
 import tensorflow as tf
 from six.moves import range
 from logging import getLogger
 
 logger = getLogger(__name__)
-pp = pprint.PrettyPrinter().pprint
 
 def get_model_dir(config, exceptions=None):
-  attrs = config.__dict__['__flags']
-  pp(attrs)
-
-  keys = list(attrs.keys())
+  keys = dir(config)
   keys.sort()
   keys.remove('env_name')
   keys = ['env_name'] + keys
@@ -21,8 +16,11 @@ def get_model_dir(config, exceptions=None):
   for key in keys:
     # Only use useful flags
     if key not in exceptions:
-      names.append("%s=%s" % (key, ",".join([str(i) for i in attrs[key]])
-          if type(attrs[key]) == list else attrs[key]))
+      value = getattr(config, key)
+      names.append(
+        "%s=%s" % (key, ",".join([str(i) for i in value])
+                   if type(value) == list else value))
+
   return os.path.join('checkpoints', *names) + '/'
 
 def timeit(f):

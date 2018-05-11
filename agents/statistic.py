@@ -22,8 +22,8 @@ class Statistic(object):
     with tf.variable_scope('summary'):
       scalar_summary_tags = [
         'average/reward', 'average/loss', 'average/q',
-        'episode/max reward', 'episode/min reward', 'episode/avg reward',
-        'episode/num of game', 'training/learning_rate', 'training/epsilon',
+        'episode/max_reward', 'episode/min_reward', 'episode/avg_reward',
+        'episode/num_of_game', 'training/learning_rate', 'training/epsilon',
       ]
 
       self.summary_placeholders = {}
@@ -95,10 +95,10 @@ class Statistic(object):
             'average/q': avg_q,
             'average/loss': avg_loss,
             'average/reward': avg_reward,
-            'episode/max reward': max_ep_reward,
-            'episode/min reward': min_ep_reward,
-            'episode/avg reward': avg_ep_reward,
-            'episode/num of game': self.num_game,
+            'episode/max_reward': max_ep_reward,
+            'episode/min_reward': min_ep_reward,
+            'episode/avg_reward': avg_ep_reward,
+            'episode/num_of_game': self.num_game,
             'episode/actions': self.actions,
             'episode/rewards': self.ep_rewards,
             'training/learning_rate': learning_rate_op.eval(session=self.sess),
