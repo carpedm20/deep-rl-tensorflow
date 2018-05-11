@@ -149,6 +149,7 @@ def main(_):
                            name='target_network', trainable=False)
     elif conf.network_header_type == 'mlp':
       pred_network = MLPSmall(sess=sess,
+                              data_format=conf.data_format,
                               observation_dims=conf.observation_dims,
                               history_length=conf.history_length,
                               output_size=env.env.action_space.n,
@@ -156,6 +157,7 @@ def main(_):
                               network_output_type=conf.network_output_type,
                               name='pred_network', trainable=True)
       target_network = MLPSmall(sess=sess,
+                                data_format=conf.data_format,
                                 observation_dims=conf.observation_dims,
                                 history_length=conf.history_length,
                                 output_size=env.env.action_space.n,
